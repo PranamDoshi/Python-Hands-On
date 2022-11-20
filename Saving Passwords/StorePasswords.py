@@ -5,16 +5,17 @@ from PasswordDictionaryClass import SavedPasswords
 dictPickleFile = 'Saved.pkl'
 
 if __name__ == "__main__":
-    passwords = SavedPasswords()
-    # with open(dictPickleFile, 'rb') as pklFile:
-    #     passwords = pickle.load(pklFile)
+    # passwords = SavedPasswords()
+    with open(dictPickleFile, 'rb') as pklFile:
+        passwords = pickle.load(pklFile)
     
     while True:
         inp = int(input("1 - Save Password \
                         \n2 - View Password \
                         \n3 - View Categories \
-                        \n4 - Change a Passowrd Category \
+                        \n4 - Change an existing Passowrd Category name \
                         \n5 - Delete categories (Provide comma separated indexs.) \
+                        \n6 - Update an existing category \
                         \n0 - I'm Done\n"))
 
         if inp == 1:
@@ -23,7 +24,7 @@ if __name__ == "__main__":
             # Checks if the category already exists.
             if passwords.checkCategoryIfExists(name):
                 print("Please use the existing category!")
-            
+
             if name not in ['0', None, '', '\t', '\n']:
                 password = input("Enter Password:")
                 passwords.savePassword(name, password)
@@ -54,6 +55,12 @@ if __name__ == "__main__":
 
             for idx in inpIdxs:
                 passwords.delPassword(categories[inpIdxs])
+        elif inp == 6:
+            name = input("Enter the existing category name:")
+
+            if name not in ['0', None, '', '\t', '\n']:
+                password = input("Enter Password:")
+                passwords.savePassword(name, password)
         else:
             break
      
