@@ -1,0 +1,18 @@
+version: '3'
+services:
+  amazon_data_crawler_chrome:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: /home/ubuntu/logs
+        target: /home/ubuntu/logs
+    networks:
+      - selenium-network
+    restart: always
+    scale: 3
+
+networks:
+  selenium-network:
+    driver: bridge
