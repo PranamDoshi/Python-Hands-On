@@ -5,7 +5,7 @@ parent_path = Path(Path(__file__).parent).as_posix()
 FPM_API = "https://usc-fpm.streamoid.com/v1/usc"
 GET_PAGE_CONTENT_ENDPOINT = f"{FPM_API}/getPageContent"
 
-LOGS_FOLDER = f"{Path.home()}/logs"
+LOGS_FOLDER = f"{parent_path}/logs"
 DOMAIN_MODULE_PREFERENCE_FILE = f"{parent_path}/fpm_domain_configs.json"
 
 ALLOW_SCREENSHOTS, ALLOW_ALERTS = 1, 1
@@ -24,12 +24,6 @@ userAgents = {
 DISPLAY_SIZE_STRING = '1400x900'
 DISPLAY_SIZE_TUPLE = tuple(map(int, DISPLAY_SIZE_STRING.split('x')))
 DISPLAY_VISIBLE = 0
-
-# Proxy Specific Config
-PROXY_HOST = "pr.oxylabs.io"
-PROXY_PORT = 7777
-PROXY_USER = "RohanManthani3"
-PROXY_PASSWORD = "hDpU987K5d_rfbU"
 
 CHROMEDRIVER = '/home/pranam/chromedriver'
 CHROME = '/opt/google/chrome/chrome'

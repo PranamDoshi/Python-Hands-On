@@ -788,5 +788,10 @@ class seleniumModule:
             else:
                 logger.info(f"Couldn't load page for {company_name}, Message from FPM: {message}")
 
+            self.driver.closeDriver()
+            return 0
+
         except Exception as e:
             logger.error(f"Exception inside parse_and_scrape_finchat ==> {traceback.format_exc()}")
+            self.driver.closeDriver()
+            return -1
