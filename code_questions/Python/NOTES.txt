@@ -1,0 +1,90 @@
+Range in Python :- 
+	
+	range(starting point, highest value, difference)
+
+use [::-1] to reverse any sring.
+
+use ord to get the ASCII value of any variable.
+
+Type-code	C_type		Python_type			Min. Size
+
+'b'		signed char		int						1
+'B'		unsigned char	int						1
+'u'		Unicode			Unicode character		2
+'h'		signed short	int						2
+'H'		unsigned short	int 					2
+'i'		signed int		int						2	
+'I'		unsigned int 	int 					2
+'l'		signed long		int 					4
+'L'		unsigned long	int 					4
+'f'		float			float					4
+'d'		double			float					8				
+
+NUMPY :- 
+Ways to create an array :
+	array()
+	linspace()
+	logspace()
+	arange()
+	zeros()
+	ones()
+flatten() used to convert nD to 1D array.7
+
+reshape()
+
+array.ndim - returns dimension of the array.
+
+self - used to specify object in a class
+
+__init__ --> by default assignes given values to new object.
+
+set_mname || get_mname --> setter and getter methods.
+
+Methods of calling object :-
+1-instance 
+2-class
+3-static
+
+class B(#Name of the class to inherit from)
+
+iterating arrat :- for x in geek.nditer(a):
+				        print(x)
+						
+b = a.T :- Transpose of a
+
+__name :- specifies the variable as hidden variable
+
+can be accessed by using :- name._cname__vname
+
+printing objects :- can be done using __rept__ and __str__ methods
+
+t calls __str__ and [t] calls __repr__ methods
+
+issubclass :- gives if a class if subclass of another class
+
+		matplotlib.pylab as plt
+
+plt.plot(x, y, color = '', linewidth = __, linestyle = '', '-.gD', alpha = __, markersixe = __) - plots graph
+plt.show() - displays graph
+plt.x/ylabe("") - rename x/y axis
+plt.title("")
+plt.grid() --> for the boxes
+plt.legend() --> different colour of lines
+plt.bar() --> bar type graph
+np.arange(condition)
+plt.hist() -- continuous bar graph
+	bins -- range
+	histtype -- "Step"
+				"Solid"
+plt.pie() -- disribution type graph
+	autopct -- display percentage - '%0.2f%%'
+	radius
+	explode -- cut out particular part
+	shadow
+	startangle
+	plt.saveflag -- save image of the graph
+\w = [A-Z, a-z, 0-9]
+\W = complement of w
+'+' -- 1 or more
+'*' -- 0 or more
+'?' -- 0 or 1

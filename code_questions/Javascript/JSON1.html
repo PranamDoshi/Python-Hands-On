@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <input id = "h" type = "text" value = "hotel"/><br />
+    <input id = "LA" type = "button" value = "List All" onclick = "List()"/>
+    <input id = "S" type = "button" value = "Search" onclick = "Search()"/><br />
+    <p id = "para"></p>
+    <script type = "text/javascript">
+        function List()
+        {
+            var xmlhttp1 = new XMLHttpRequest();
+            xmlhttp1.onreadystatechange = function()
+            {
+                if(this.readyState == 4 && this.status == 200)
+                {
+                    var xmlDoc1 = this.responseXML;
+                    var list = "", slist = "";
+                    var star;
+                    var x = xmlDoc1.getElementsByTagName("hotel");
+                    for(var i = 0;i < x.length;i++)
+                    {
+                        star = x[i].getElementsByTagName("type")[0].childNodes[0].nodeValue;
+                        slist = "";
+                        for(var j = 0;j < star;j++)
+                        {
+                            slist += "*";
+                        }
+                        list += "Name: " + x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue +
+                                "-->" + slist + 
+                                "City: " + x[i].getElementsByTagName("city")[0].childNodes[0].nodeValue + "<br />";
+                    }
+                    document.getElementById("para").innerHTML = list;
+                }
+            };
+            xmlhttp1.open("GET", "Hotel_List.xml", true);
+            xmlhttp1.send();
+        }
+        function Search()
+        {
+            var xmlhttp2 = new XMLHttpRequest();
+            xmlhttp2.onreadystatechange = function()
+            {
+                if(this.readyState == 4 && this.status == 200)
+                {
+                    var xmlDoc2  =this.responseXML;
+                    var hotel = document.getElementById("h").value;
+                    var search = "", slist = "";
+                    var star;
+                    var x = xmlDoc2.getElementsByTagName("hotel");
+                    for(var i = 0;i < x.length;i++)
+                    {
+                        star = x[i].getElementsByTagName("type")[0].childNodes[0].nodeValue;
+                        slist = "";
+                        for(var j = 0;j < star;j++)
+                        {
+                            slist += "*";
+                        }
+                        if(x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue == hotel)
+                        {
+                            search += "Name: " + x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue + 
+                                      "-->" + slist +
+                                      "City: " + x[i].getElementsByTagName("city")[0].childNodes[0].nodeValue + "<br />";
+                        }
+                    }
+                    document.getElementById("para").innerHTML = search;
+                }
+            };
+            xmlhttp2.open("GET", "Hotel_List.xml", true);
+            xmlhttp2.send();
+        }
+    </script>
+</body>
+</html>

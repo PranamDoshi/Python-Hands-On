@@ -1,0 +1,38 @@
+import java.util.*;
+public class RandPass 
+{
+    public static char geneup()
+    {
+        Random r = new Random();
+        int max = 90, min = 65;
+        char ch;
+        int up = r.nextInt((max - min) + 1) + min;
+        ch = (char)up;
+        return ch;
+    }
+    public static char genelw()
+    {
+        Random r = new Random();
+        int max = 122, min = 97;
+        char ch;
+        int lw = r.nextInt((max - min) + 1) + min;
+        ch = (char)lw;
+        return ch;
+    }
+    public static void main(String[] args)
+    {
+        Random r = new Random();
+        StringBuilder PassWord = new StringBuilder();
+        int temp;
+        PassWord.append(genelw());
+        temp = r.nextInt(10);
+        PassWord.append(temp);
+        PassWord.append(geneup());
+        PassWord.append(genelw());
+        temp = r.nextInt(10);
+        PassWord.append(temp);
+        temp = r.nextInt(10);
+        PassWord.append(temp);
+        System.out.print(PassWord + "\n");
+    }
+}

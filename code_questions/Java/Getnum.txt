@@ -1,0 +1,15 @@
+import java.util.*;
+public class GetNum 
+{
+    public static void main(String[] args)
+    {
+        Scanner input = new Scanner(System.in);
+        Random rand = new Random();
+        System.out.print("Enter highest number in your desired range...\n");
+        int max = input.nextInt();
+        System.out.print("Enter lowest number in your desired range....\n");
+        int min = input.nextInt();
+        int random = rand.nextInt((max - min) + 1) + min;
+        System.out.print("Random number generated is :- " + random);
+    }
+}

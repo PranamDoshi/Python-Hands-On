@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <table id = "t1" border = "1" style = "width:15%">
+        <tr>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>            
+    </table>       
+    <input type = "number" name = "row" value = "row"/><br />
+    <input type = "number" name = "col" value = "col"/><br />
+    <input type = "button" value = "Turn" onclick = "MyTurn()"/>
+    <script>
+        var turn = 1;
+        function MyTurn()
+        {
+            var table = document.getElementById("t1");
+            var row = document.getElementsByName("row")[0].value - 1;
+            var col = document.getElementsByName("col")[0].value - 1;
+            if(table.rows[row].cells[col].innerHTML == 0)
+            {
+                table.rows[row].cells[col].innerHTML = turn;
+                turn = 3 - turn;
+            }
+        }
+    </script>
+</body>
+</html>

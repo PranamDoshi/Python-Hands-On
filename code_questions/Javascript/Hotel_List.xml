@@ -1,0 +1,22 @@
+<hotelgroup>
+	<hotel>
+		<name>Taj residency</name>
+		<city>Mumbai</city>
+		<type>5</type>
+	</hotel>
+	<hotel>
+		<name>Oberoi</name>
+		<city>Mumbai</city>
+		<type>7</type>
+	</hotel>
+	<hotel>
+		<name>Opera</name>
+		<city>Delhi</city>
+		<type>2</type>
+	</hotel>
+	<hotel>
+		<name>Welcome Inn</name>
+		<city>Ahmedabad</city>
+		<type>3</type>
+	</hotel>
+</hotelgroup>

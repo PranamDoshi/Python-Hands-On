@@ -1,0 +1,19 @@
+import java.util.*;
+public class GuessNum 
+{
+    public static void main(String[] args)
+    {
+        Scanner input = new Scanner(System.in);
+        Random rand = new Random();
+        System.out.print("Enter your guessed number....(Between 0-9)\n");
+        int num = input.nextInt();
+        int i = rand.nextInt(10);
+        if(i == num)
+            System.out.print("You guessed exactly the same number as computer...\n");
+        if(i > num)
+            System.out.print("You guessed higher number than computer...\n");
+        if(i < num)
+            System.out.print("Ypu guessed lower number than computer...\n");
+        System.out.print("Computer guessed :-" + i + "\nYou guessed :-" + num + "\n");
+    }
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <script>
+        var f = 0;
+        var c = 0;
+        function changeS(e)
+        {
+            var h = e.height;
+            var w = e.width;
+            /*if(f == 0)
+            {
+                e.height = h + 100;
+                e.width = w + 100;
+            }
+            if(f == 1)
+            {
+                e.width = h - 100;
+                e.height = h - 100;
+            }*/
+            c++;
+            if(c == 5)
+                c = -5;
+            if(c > 0)
+            {
+                e.height = h + 100;
+                e.width = w + 100;                
+            }
+            if(c < 0)
+            {
+                e.width = h - 100;
+                e.height = h - 100;
+            }
+        }
+        function changeF()
+        {
+            f = 1 - f;
+        }
+    </script>
+    <img id = "i1" src = "5.jpg" height = "200" width = "200" 
+        onclick = "changeS(this)" />
+    <input type = "button" value = "Reverse Effect" name = "re"
+        onclick = "changeF(i1)" />
+</body>
+</html>

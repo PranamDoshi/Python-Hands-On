@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script type = "text/javascript">
+        function getHappy(n)
+        {
+            var sum  = 0;
+            while(n != 0)
+            {
+                sum += (n % 10) * (n % 10);
+                n /= 10;
+                n = parseInt(n);
+            }
+            sum = parseInt(sum);
+            return sum;
+        }
+        function checkHappy(n)
+        {
+            var c = 0;
+            var ans = n;
+            for(c = 0;c < 10;c++)
+            {
+                ans = parseInt(getHappy(ans));
+                if(ans == 1)
+                    c = 10;
+            }
+            if(ans == 1)
+                return true;
+            else 
+                return false;
+        }
+        var k = 0, i = 1;
+        while(k < 10)
+        {
+            if(checkHappy(i))
+            {
+                document.write(k + " Happy Number is " + i + "<br />");
+                k++;
+            }
+            i++;
+        }
+    </script>
+</body>
+</html>

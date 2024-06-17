@@ -1,0 +1,4 @@
+To limit number of lines:
+LIMIT number;
+eg. LIMIT 2, 4; --> Starting from 3, 4 rows
+eg. LIMIT 2 --> first 2 lines

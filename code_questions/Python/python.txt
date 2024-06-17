@@ -1,0 +1,257 @@
+list:-
+list.
+	append(x)
+	remove(x)
+	pop()
+	extend([x, y, z])
+	insert(index, x)
+	reverse()
+	sort()
+max(list)
+min(list)
+sumlist()
+
+List Comprehension:-
+a=[1,2,3,4,5]
+print([i**2 for i in a])
+
+a=[1,2,3,4,5]
+print(['even' if i%2==0 else 'odd' for i in a])
+
+a=[1,2,3,4,5]
+b=[1,2,3,4,5]
+print([a[i]+b[i] for i in range(5)])
+print([i+k for i in a for k in b])
+
+a=[(int(input())) for x in range(10)]
+print(sum([x if x>10 else 0 for x in a]))
+print(sum([x* int(x>10) for x in a]))
+
+
+tuples:-
+declaration:- tup = (2,3,5,6)
+tup.count(x) - Number of repetitions of 'x' in tuples
+tup.index(x) - Index of x
+
+
+set:-
+declaration:- s = {x, y, z}
+
+range:-
+declaration:- range(x)
+range(starting number, ending number +1) OR
+range(starting number, ending number +1, intervals)
+
+Dictionary:-
+declaration:- d = {'s':'Apple','p':Samsung;,'T':'oneplus'}
+d.keys() -->  displays keys
+
+Number System:-
+ Decimal to Binary:-
+bin(x)		
+vice versa:-
+x=bin(x)	
+ Decimal to Octal:-
+oct(x)
+vice versa:-
+x=oct(x)
+ Decimal to Hexadecimal:-
+hex(x)
+vice versa:-
+x=hex(x)
+
+Swap two numbers(a, b)(^ - XOR):-
+a=a^b
+b=a^b
+a=a^b
+ OR
+a,b=b,a
+ OR
+a=a+b
+b=a-b
+a=a-b
+
+Typecasting:-
+Default input type is STRING 
+a=input()
+a=int(a)
+
+Libraries:-
+import math
+math.
+--sqrt(x)
+--floor(x)
+--ceil(x)
+--factorial(x)
+	Importing only some functions of a particular module:-
+	--from math import sqrt, pow
+	--sqrt(x)	#No need of math.
+	--pow(x)
+
+Bitwise Operator:-
+	Complement(~)
+	And(&)
+	Or(|)
+	XOR(^)
+	Left Shift(<<)  #Multiply by 2
+	Right Shift(>>) #Divide by 2
+
+Calculate ASCII Value:-
+	ord('x')
+	2x^2+3x-x^1.2
+
+Reverse a String:-
+print(x[::-1])
+
+
+Type Code	C Type		Python Type		Size in Bytes
+'b'		signed char	int			1
+'B'		unsigned char	int			1
+'u'		Unicode		unicode character	2
+'h'		signed short	int			2
+'H'		unsigned short	int			2	
+'i'		signed int	int			2
+'I'		unsigned int	int			2
+'l'		signed long	int			4
+'L'		unsigned long	int			4
+'f'		float		float			4
+'d'		double		float			8
+
+create array of size 5 and delete value at index 2 without
+using buit in functions
+
+reverse an array manually
+
+NUMPY:- 
+array()
+linspace(starting value, ending value, Number of values)
+logspace(starting value, ending value, Number of values)
+arange(starting value, ending value, Difference between two numbers)
+zeros(ending value, dataType)
+ones(ending value, dataType)
+
+array.copy()	Creates array at two different location
+array.view()	Creates a view of the array
+array1=array2	Two variables pointing at same array
+concatenate([x, y])	Concatenates two arrays x and y(x+y)
+array.ndim	Gives number of dimensions of array
+array.shape	Gives the order of array
+array.size	Gives number of elements in array
+array.flatten()	Convert an array in 1 Dimension
+array.reshape(x,y,z)	x-Number of arrays required y-Number of rows required z-Number of elements in an array
+
+Matrix()
+m=matrix('1 2 3;2 3 4')		Gives array of (2 X 3)
+diagonal(m)	Gives primary diagonal of matrix
+m=m1+m2		Addition of matrices m1 and m2
+m=m1*m2		Multiplication of matrices m1 and m2
+
+def person(name, *data):
+        print(name)
+        print(data)
+person('xyz', 28, 'Mumbai', 9899)
+
+def person(name, **data):
+        print(name)
+        print(data)
+person('xyz', age=28, city='Mumbai', Mob=9899)
+
+def person(name, **data):
+        print(name)
+        #print(data)
+        for i,j in data.items():
+                print(i,j)
+person('xyz', age=28, city='Mumbai', Mob=9899)
+
+a=15
+def xyz():
+        global a    #global when called makes the value same whenever the variavle is called
+        a=15
+        print(a)
+xyz()
+print(a)
+
+a=10
+b=9
+c=100
+def xyz():
+        a=9
+        d=globals()['a']=25
+        print(a)
+xyz()
+print(a)
+Output:- 9 
+	 25
+
+def count(a):
+        even=0
+        odd=0
+        for i in a:
+             if(i%2==0):
+                even+=1
+             else:
+                odd+=1
+        return even,odd
+a=[1,2,3,4,5,6,7]
+even,odd=count(a)
+print("Even:{} and Odd:{}".format(even,odd))
+
+a=[]
+for i in range(5):
+        a.append(input())
+for i in a:
+        if(len(i)<=5):
+                print(i)
+
+For Default Recursion limit:-
+import sys
+print(sys.getrecursionlimit())
+Output:- 1000
+
+For Changing Recursion limit:-
+import sys
+sys.setrecursionlimit(2000)
+print(sys.getrecursionlimit())
+Output:- 2000
+
+Anonymous Function:- lambda
+f=lambda a,b,c: a+b+c
+r=f(5,6,7)
+print(r)
+
+def iseven(n):
+    return n%2==0
+ns=[2,3,4,5,6,7,8]
+evens=list(filter(iseven, ns))
+print(evens)
+
+ns=[2,3,4,5,6,7,8]
+evens=list(filter(lambda n: n%2==0, ns))
+print(evens)
+
+ns=[2,3,4,5,6,7,8]
+evens=list(filter(lambda n: n%2==0, ns))
+square=list(map(lambda p: p**2, evens))
+print(evens)
+print(square)
+
+from functools import reduce
+ns=[2,3,4,5,6,7,8]
+evens=list(filter(lambda n: n%2==0, ns))
+square=list(map(lambda p: p**2, evens))
+sum=reduce(lambda a,b:a+b,square)
+print(evens)
+print(square)
+print(sum)
+	
+Class:-
+class comp:
+    def config(self):
+        print("...")
+a=5
+a.bit_length()
+print(type(a))
+c=comp()
+c.config()
+print(type(c))
+#comp.config(comp)

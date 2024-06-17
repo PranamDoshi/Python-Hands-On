@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <select id = "DL">
+        <option value = "1">IS</option>
+        <option value = "2">TOC</option>
+        <option value = "3">OS</option>
+        <option value = "4">WT</option>
+        <option value = "5">SE</option>
+    </select>
+    <input type = "button" value = "RemoveSelected" onclick = "deleteData()"/>
+    <script type = "text/javascript">
+        function deleteData()
+        {
+            var list = document.getElementById("DL");
+            for(var i = 0;i <= list.options.length;i++)
+            {
+                if(list.options[i].selected)
+                {
+                    list.removeChild(list.options[i]);
+                    break;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

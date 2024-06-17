@@ -1,0 +1,17 @@
+import java.util.*;
+public class Gener169 
+{
+    public static void main(String[] args)
+    {
+        Random rand = new Random();
+        int count = 1;
+        int max = 200, min = 150;
+        int j = rand.nextInt((max-min) + 1) + min;
+        while(j != 169)
+        {
+            j = rand.nextInt((max - min) + 1) + min;
+            count++;
+        }
+        System.out.print("Finally we generated 169 using random function....\n" + "And it took " + count + " generations to finally get 169...\n");
+    }
+}

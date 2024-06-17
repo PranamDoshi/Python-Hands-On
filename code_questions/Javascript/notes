@@ -1,0 +1,36 @@
+Advantages of JS :-
+	Less Server Interaction
+	Immediate feedback to the visitors
+	Increased interactivity
+	richer interfaces
+
+cannot be used for network application
+doesn't have multi-threading or multi processsor
+no read/write of files
+
+concat(), indexOf(), lastIndexOf(), reverse(), pop(), push(), join() --- array functions
+
+Date(year, month, day) object gives date after given date values
+
+Regular Expression:
+	pattern of the text
+	.match(regexp)
+	.replace(regexp, text)
+	
+. - any char except \n
+\. - to match dot char
+^ - start of string
+$ - end of string
+{min, max} - /a(bc){2, 4}/ --> 2 to 4 times bc
+g - after regex to replace all occurances
+i - for case-insensitive
+m - multi-line mode
+| - 'or'
+\b - word boundary
+\d - any digit
+\s - whitespace char
+\w - word char
+\0 - overall pattern
+\1 - 1st parenthetical capture
+\2 - 2nd parenthetical capture
+	str.replace(/(\w+),\s+(\w+)/, "$2 $1");

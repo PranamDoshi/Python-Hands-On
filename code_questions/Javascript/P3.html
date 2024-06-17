@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script type = "text/javascript">
+        function getN(n, N)
+        {
+            var arr = new Array(N);
+            for(var i = 0;i < N;i++)
+                arr[i] = (i + 1);
+            for(var i = 0;i < n;i++)
+                document.write(arr[i] + "<br />");
+        }
+        var N = parseInt(prompt("Enter size of the array..."));
+        var n = parseInt(prompt("Enter number of elements to get from array..."));
+        getN(n, N);
+    </script>
+</body>
+</html>

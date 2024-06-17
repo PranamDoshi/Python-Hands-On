@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script type = "text/javascript">
+        function changeP()
+        {
+            var p = document.getElementById("p1");
+            if(p.style.fontSize == "x-large")
+                p.style.fontSize = "medium";
+            else
+                p.style.fontSize = "x-large";
+            if(p.style.fontStyle == "italic")
+                p.style.fontStyle = "normal";
+            else
+                p.style.fontStyle = "italic";
+        }
+    </script>
+    <p id = "p1">
+        Hi This is Code 1 of DOM.
+    </p>
+    <input type = "button" value = "submit" onclick="changeP()"/>
+</body>
+</html>
