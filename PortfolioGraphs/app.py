@@ -16,7 +16,7 @@ benchmark = st.selectbox('Select the benchmark index:', list(get_benchmark_indic
 tickers = st.multiselect('Select all the Stocks from your Portfolio:', get_available_tickers())
 
 # Take mutual fund input from user
-mutual_fund = st.text_input("Enter a Mutual Fund Name:", value=None)
+# mutual_fund = st.text_input("Enter a Mutual Fund Name:", value=None)
 
 # Optional date fields
 start_date = st.date_input('Start date', value=None)
@@ -29,10 +29,10 @@ period = st.selectbox('Select a Time Period:', get_period_values())
 if st.button('Submit'):
     try:
         # Call the function to generate HTML
-        html_content = main(get_benchmark_indices()[benchmark], [f"{ticker}.NS" for ticker in tickers], 0.0615, mutual_fund=mutual_fund, start_date=start_date, end_date=end_date, period=period)
+        html_content = main(get_benchmark_indices()[benchmark], [f"{ticker}.NS" for ticker in tickers], 0.0615, mutual_fund=get_benchmark_indices()[benchmark], start_date=start_date, end_date=end_date, period=period)
 
         # st.markdown(html_content, unsafe_allow_html=True)
-        components.html(html_content, width=1920, height=1080, scrolling=True)
+        components.html(html_content, width=1400, height=1080, scrolling=True)
 
     except Exception as e:
         st.error(f"An error occured while comparing your Portfolio: {str(e)}")

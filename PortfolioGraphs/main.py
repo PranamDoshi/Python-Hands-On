@@ -30,7 +30,7 @@ def main(
     # output_file = f"{configuration.parent_path}/Strategy.html"
 
     try:
-        benchmark_data = read_stock_returns_data([benchmark], **kwargs).to_frame(name='Benchmark')
+        benchmark_data = read_stock_returns_data([benchmark], **kwargs).to_frame(name='Benchmark (Recalc)')
         logger.info(benchmark_data)
     except Exception as e:
         logger.error(f"Couldn't download the Returns Data of Nifty for provided timeline! Error: {traceback.format_exc()}")
@@ -45,7 +45,7 @@ def main(
     
     if mutual_fund:
         try:
-            mutual_funds_data = read_stock_returns_data(mutual_fund, **kwargs).to_frame(name='Mutual Fund')
+            mutual_funds_data = read_stock_returns_data(mutual_fund, **kwargs).to_frame(name='Benchmark')
             logger.info(mutual_funds_data)
             logger.info(mutual_funds_data.columns)
             # mutual_funds_data['Mutual Fund'] = mutual_funds_data['Close']
@@ -61,10 +61,13 @@ def main(
         if len(tickers) > 1:
             merged_stocks_data = stocks_data.mean(axis=1).to_frame(name='Stocks Portfolio')
         else:
-            merged_stocks_data = stocks_data.to_frame(name='Stocks Portfolio')
+            merged_stocks_data = stocks_data
+            merged_stocks_data.Name = 'Stocks Portfolio'
+        # merged_stocks_data = stocks_data
 
         logger.info(merged_stocks_data)
-        logger.info(merged_stocks_data.columns)
+        if isinstance(merged_stocks_data, pd.DataFrame):
+            logger.info(merged_stocks_data.columns)
 
         if mutual_funds_data is not None:
             merged_data = pd.concat([merged_stocks_data, mutual_funds_data], axis=1)
@@ -115,7 +118,7 @@ def get_benchmark_indices()-> dict[str, str]:
     }
 
 if __name__ == "__main__":
-    html_content = main(benchmark='^NSEI', tickers=["RELIANCE.NS", "TCS.NS"], rf=0.0615, mutual_fund="0P0001BA3I.BO", start_date='2024-04-30', end_date='2024-06-20')
+    html_content = main(benchmark='0P0001BA3I.BO', tickers=["RELIANCE.NS", "TCS.NS"], rf=0.0615, mutual_fund=None, start_date='2018-04-01', end_date='2024-06-20')
     if html_content:
-        with open(f"{configuration.parent_path}/Strategy.html", "r") as f:
+        with open(f"{configuration.parent_path}\Strategy.html", "r") as f:
             f.write(html_content)
