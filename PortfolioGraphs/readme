@@ -1,0 +1,1 @@
+To install quantstats module: pip install -e git+https://github.com/ranaroussi/quantstats.git#egg=quantstats
