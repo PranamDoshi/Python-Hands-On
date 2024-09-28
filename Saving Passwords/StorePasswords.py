@@ -2,12 +2,42 @@ import pickle
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-import json
+import json, random, string
 from pprint import pprint, PrettyPrinter
+
+MIN_PASSWORD_LENGTH = 8
 
 prettyPrinterConfig = PrettyPrinter(indent=4)
 def print_data(obj):
     prettyPrinterConfig.pprint(obj)
+
+def generate_password(length)-> str:
+    if length < MIN_PASSWORD_LENGTH:
+        raise ValueError("Password length should be at least {} to include all character types.".format(MIN_PASSWORD_LENGTH))
+    
+    # Define character sets
+    lower = string.ascii_lowercase
+    upper = string.ascii_uppercase
+    digits = string.digits
+    special = string.punctuation
+    
+    # Ensure the password contains at least one character from each set
+    password = [
+        random.choice(lower),
+        random.choice(upper),
+        random.choice(digits),
+        random.choice(special)
+    ]
+    
+    # Fill the rest of the password with random characters from all sets
+    all_characters = lower + upper + digits + special
+    password += [random.choice(all_characters) for _ in range(length - 4)]
+    
+    # Shuffle the password list to ensure randomness
+    random.shuffle(password)
+    
+    print("Generated Password: {}".format(''.join(password)))
+    return ''.join(password)
 
 
 class SavedPasswords:
@@ -83,10 +113,12 @@ class SavedPasswords:
 #Globalvariables
 dictPickleFile = f"{Path(Path(__file__).parent).as_posix()}/Saved.pkl"
 
-def savePassword():
+def savePassword(title: str = None, password: str = None, email: str = None):
     """ Save/Update Password """
-    title = input("What is the title? :- ").strip()
-    password = input("What is the password? :- ").strip()
+    if title is None:
+        title = input("What is the title? :- ").strip()
+    if password is None:
+        password = input("What is the password? :- ").strip()
     email = input("What is the associated email? (If any) :- ")
 
     if title not in {'', ' '}:
@@ -143,6 +175,31 @@ def updatePasswordTitle():
         print("Not an actual title. Try again!")
         updatePasswordTitle()
 
+def generatePassword():
+    """ Helper function to generate passwords. """
+    inp = int(input("What length of password do you want to generate?: "))
+    generatedPassword = generate_password(inp)
+
+    while True:
+        nextChoice = input("Do you want to re-generate the password or shuffle the characters? (redo/shuffle/ok): ").lower()
+        match nextChoice:
+            case "redo":
+                generatedPassword = generate_password(inp)
+
+            case "shuffle":
+                generatedPassword: list[str] = list(generatedPassword)
+                random.shuffle(generatedPassword)
+                generatedPassword = ''.join(generatedPassword)
+                print("Shuffle Password: {}".format(generatedPassword))
+
+            case "ok":
+                break
+
+    inp = input("Do you want to save the password?(yes/no): ").lower()
+    match inp:
+        case "yes":
+            savePassword(password=generatedPassword)
+
 def allDone():
     """ All Done! """
     print(f"\nIt was Great to see you. Come back soon!")
@@ -154,7 +211,8 @@ case_to_function = {
     3: viewTitles,
     4: deletePassword,
     5: updatePasswordTitle,
-    6: allDone
+    6: generatePassword,
+    7: allDone
 }
 
 def getUserChoice()-> int:
@@ -182,4 +240,4 @@ if __name__ == "__main__":
                     case_to_function[k]()
 
     except KeyboardInterrupt:
-        case_to_function[6]()
+        case_to_function[7]()
