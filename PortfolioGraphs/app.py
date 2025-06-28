@@ -32,8 +32,9 @@ if st.button('Submit'):
         html_content = main(get_benchmark_indices()[benchmark], [f"{ticker}.NS" for ticker in tickers], 0.0615, mutual_fund=get_benchmark_indices()[benchmark], start_date=start_date, end_date=end_date, period=period)
 
         # st.markdown(html_content, unsafe_allow_html=True)
-        # with open("C:/Users/Pranam/Desktop/output.txt", 'wb') as f:
+        # with open("C:/Users/Pranam/Desktop/output.html", 'wb') as f:
         #     f.write(html_content.encode('utf-8', errors='ignore'))
+        # pdfkit.from_file("C:/Users/Pranam/Desktop/output.html", "C:/Users/Pranam/Desktop/output.pdf")
         pdfkit.from_string(html_content.encode('utf-8', errors='ignore').decode(), 'C:/Users/Pranam/Desktop/output.pdf')
 
         components.html(html_content, width=1400, height=1080, scrolling=True)
