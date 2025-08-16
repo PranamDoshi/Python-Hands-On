@@ -142,6 +142,17 @@ async function openDetails(title) {
       pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
     });
     $('[data-action="copy"]', frag).addEventListener('click', () => copyToClipboard(pwdInput.value));
+    $('[data-action="update"]', frag).addEventListener('click', async () => {
+      const newPwd = (pwdInput.value || '').trim();
+      if (!newPwd) { toast('Password cannot be empty', 'error'); return; }
+      try {
+        await api.save({ title, password: newPwd, email: data.email });
+        toast('Updated');
+        await openDetails(title);
+      } catch (e) {
+        toast(e.message || 'Update failed', 'error');
+      }
+    });
 
     detailsBody.appendChild(frag);
   } catch (e) {
