@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: password-manager:latest
+    container_name: password-manager
+    ports:
+      - "8000:8000"
+    # Bind mount the host Saved.pkl into the container at the path expected by the app (/app/Saved.pkl)
+    volumes:
+      - ./Saved.pkl:/app/Saved.pkl
+    restart: unless-stopped

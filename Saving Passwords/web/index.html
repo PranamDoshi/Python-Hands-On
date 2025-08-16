@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Password Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">🗝️</div>
+      <h1>Password Manager</h1>
+    </div>
+    <div class="header-actions">
+      <button id="refreshBtn" class="btn ghost">Refresh</button>
+      <a class="btn primary" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card grid two">
+      <div>
+        <h2>Add / Update Password</h2>
+        <form id="saveForm" class="form">
+          <label>
+            <span>Title</span>
+            <input id="titleInput" type="text" placeholder="e.g. Gmail" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <div class="pass-row">
+              <input id="passwordInput" type="text" placeholder="Enter or generate" required />
+              <button id="genQuickBtn" type="button" class="btn">Generate</button>
+            </div>
+          </label>
+          <label>
+            <span>Email (optional)</span>
+            <input id="emailInput" type="email" placeholder="name@example.com" />
+          </label>
+          <div class="row">
+            <button class="btn primary" type="submit">Save</button>
+            <button class="btn ghost" type="reset">Clear</button>
+          </div>
+        </form>
+      </div>
+
+      <div>
+        <h2>Generator</h2>
+        <div class="generator">
+          <div class="row">
+            <label for="lenRange">Length</label>
+            <input id="lenRange" type="range" min="8" max="48" step="1" value="12" />
+            <output id="lenOut">12</output>
+          </div>
+          <div class="row">
+            <button id="genBtn" class="btn">Generate</button>
+            <input id="genResult" class="mono" type="text" readonly />
+            <button id="copyBtn" class="btn ghost" title="Copy">Copy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row space">
+        <h2>Saved Passwords</h2>
+        <input id="searchInput" type="search" placeholder="Search titles..." />
+      </div>
+      <div id="titles" class="titles"></div>
+    </section>
+
+    <section class="card" id="detailsCard" hidden>
+      <div class="row space">
+        <h2 id="detailsTitle">Details</h2>
+        <div class="row gap">
+          <button id="renameBtn" class="btn">Rename</button>
+          <button id="deleteBtn" class="btn danger">Delete</button>
+        </div>
+      </div>
+      <div id="detailsBody"></div>
+    </section>
+  </main>
+
+  <template id="titleItemTpl">
+    <button class="title-item"></button>
+  </template>
+
+  <template id="detailsTpl">
+    <div class="kv">
+      <div class="k">Title</div>
+      <div class="v mono" data-k="title"></div>
+    </div>
+    <div class="kv">
+      <div class="k">Password</div>
+      <div class="v">
+        <input class="mono" type="password" data-k="password" readonly />
+        <button class="btn ghost sm" data-action="toggle">Show</button>
+        <button class="btn ghost sm" data-action="copy">Copy</button>
+      </div>
+    </div>
+    <div class="kv">
+      <div class="k">Email</div>
+      <div class="v mono" data-k="email"></div>
+    </div>
+    <div class="kv">
+      <div class="k">Title History</div>
+      <div class="v mono" data-k="title_history"></div>
+    </div>
+    <div class="kv">
+      <div class="k">Password History</div>
+      <div class="v mono" data-k="password_history"></div>
+    </div>
+  </template>
+
+  <script src="/static/app.js" type="module"></script>
+</body>
+</html>
