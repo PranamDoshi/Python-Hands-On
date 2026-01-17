@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Airflow Scraping Architecture – Progress Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2933;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #f59e0b;
+      --done: #22c55e;
+      --pending: #ef4444;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
+      background: linear-gradient(180deg, #020617, var(--bg));
+      color: var(--text);
+    }
+
+    header {
+      padding: 20px 24px;
+      background: var(--panel);
+      border-bottom: 1px solid #1e293b;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .phase {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .phase h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .phase small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      background: #020617;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .status {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .done {
+      background: rgba(34,197,94,.15);
+      color: var(--done);
+    }
+
+    .pending {
+      background: rgba(239,68,68,.15);
+      color: var(--pending);
+    }
+
+    footer {
+      padding: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: transparent;
+      border: 1px solid #334155;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    button:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Airflow‑based Scraping Architecture</h1>
+  <p>Personal checklist · Progress is saved locally in your browser</p>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  Built for tracking APIs, workers, DAGs, infra & utilities · Local‑only (no backend)
+</footer>
+
+<script>
+const PHASES = [
+  {
+    title: "1. API & Control Plane",
+    desc: "User‑facing & internal APIs",
+    items: [
+      "Create Recurring Crawl API",
+      "Update / Pause / Resume Crawl API",
+      "Fetch Crawl Status & Stats API",
+      "Render Scraped Data (UI API)",
+      "Auth / API key validation",
+      "Rate‑limit & quota enforcement"
+    ]
+  },
+  {
+    title: "2. Airflow DAGs",
+    desc: "Orchestration layer",
+    items: [
+      "Main Crawl DAG",
+      "Recurring Crawl Scheduler DAG",
+      "Extractor Completion Sensor",
+      "Crawler Completion Sensor",
+      "Failure / Retry handling",
+      "Backfill & manual trigger support"
+    ]
+  },
+  {
+    title: "3. Extractor Service",
+    desc: "PLP/category extraction",
+    items: [
+      "Extractor worker service",
+      "Extractor queue consumer",
+      "Category pagination logic",
+      "PDP URL generation",
+      "Write PDP docs to Mongo",
+      "Extractor metrics & logs"
+    ]
+  },
+  {
+    title: "4. Crawler Service",
+    desc: "PDP scraping",
+    items: [
+      "Crawler worker service",
+      "Crawler queue consumer",
+      "XPath / selector engine",
+      "Retry & proxy handling",
+      "Update PDP status in Mongo",
+      "Crawler metrics & logs"
+    ]
+  },
+  {
+    title: "5. Data Stores",
+    desc: "SQL + Mongo",
+    items: [
+      "Recurring crawl schema (SQL)",
+      "Crawl run tracking tables",
+      "PDP document schema (Mongo)",
+      "Indexes & TTL policies",
+      "Status & state transitions",
+      "Data cleanup jobs"
+    ]
+  },
+  {
+    title: "6. Queues & Messaging",
+    desc: "Extractor / Crawler queues",
+    items: [
+      "Queue abstraction module",
+      "Extractor queue setup",
+      "Crawler queue setup",
+      "Dead‑letter handling",
+      "Idempotency guarantees",
+      "Queue monitoring"
+    ]
+  },
+  {
+    title: "7. Utilities & Shared Libs",
+    desc: "Cross‑cutting code",
+    items: [
+      "Config loader",
+      "XPath helpers",
+      "HTTP client wrapper",
+      "Retry & backoff utils",
+      "Logging & tracing",
+      "Common exceptions"
+    ]
+  },
+  {
+    title: "8. Docker & Infra",
+    desc: "Containers & deployment",
+    items: [
+      "Airflow Docker image",
+      "Extractor Docker image",
+      "Crawler Docker image",
+      "Queue service container",
+      "Docker‑compose / Helm",
+      "Secrets & env management"
+    ]
+  }
+];
+
+const app = document.getElementById("app");
+
+function loadState(key) {
+  return localStorage.getItem(key) === "true";
+}
+
+function saveState(key, value) {
+  localStorage.setItem(key, value);
+}
+
+PHASES.forEach((phase, pIndex) => {
+  const section = document.createElement("section");
+  section.className = "phase";
+
+  section.innerHTML = `
+    <div class="toolbar">
+      <div>
+        <h2>${phase.title}</h2>
+        <small>${phase.desc}</small>
+      </div>
+      <button data-reset="${pIndex}">Reset</button>
+    </div>
+    <ul></ul>
+  `;
+
+  const ul = section.querySelector("ul");
+
+  phase.items.forEach((item, iIndex) => {
+    const key = `p${pIndex}-i${iIndex}`;
+    const checked = loadState(key);
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <label>
+        <input type="checkbox" ${checked ? "checked" : ""} />
+        ${item}
+      </label>
+      <span class="status ${checked ? "done" : "pending"}">
+        ${checked ? "Done" : "Pending"}
+      </span>
+    `;
+
+    const checkbox = li.querySelector("input");
+    const status = li.querySelector(".status");
+
+    checkbox.addEventListener("change", () => {
+      saveState(key, checkbox.checked);
+      status.textContent = checkbox.checked ? "Done" : "Pending";
+      status.className = `status ${checkbox.checked ? "done" : "pending"}`;
+    });
+
+    ul.appendChild(li);
+  });
+
+  section.querySelector("button").addEventListener("click", () => {
+    phase.items.forEach((_, iIndex) => {
+      const key = `p${pIndex}-i${iIndex}`;
+      localStorage.removeItem(key);
+    });
+    location.reload();
+  });
+
+  app.appendChild(section);
+});
+</script>
+
+</body>
+</html>

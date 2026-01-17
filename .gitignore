@@ -132,3 +132,5 @@ dmypy.json
 *.pkl
 *ENV
 *.json
+ApacheAirflowDemo/docs/project_tracker-openai.html
+ApacheAirflowDemo/docs/project_tracker.html

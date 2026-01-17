@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Architecture Project Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .phase-tabs {
+            display: flex;
+            background: #f8f9fa;
+            padding: 0 30px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .phase-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-size: 1em;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .phase-tab:hover {
+            color: #667eea;
+        }
+
+        .phase-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .phase-content {
+            display: none;
+        }
+
+        .phase-content.active {
+            display: block;
+        }
+
+        .category {
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-header:hover {
+            opacity: 0.9;
+        }
+
+        .category-title {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .category-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-text {
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 150px;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .category-items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .category.expanded .category-items {
+            max-height: 2000px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
+        }
+
+        .checklist-item:hover {
+            background: #f8f9fa;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .item-text.completed {
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .actions {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .category.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .category-progress {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Scraping Architecture Tracker</h1>
+            <p>Track your implementation progress across all components</p>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCompleted">0</div>
+                <div class="stat-label">Completed Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPending">0</div>
+                <div class="stat-label">Pending Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="overallProgress">0%</div>
+                <div class="stat-label">Overall Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentPhase">-</div>
+                <div class="stat-label">Current Phase</div>
+            </div>
+        </div>
+
+        <div class="phase-tabs">
+            <button class="phase-tab active" data-phase="all">All Tasks</button>
+            <button class="phase-tab" data-phase="phase1">Phase 1: Foundation</button>
+            <button class="phase-tab" data-phase="phase2">Phase 2: Core Logic</button>
+            <button class="phase-tab" data-phase="phase3">Phase 3: Orchestration</button>
+            <button class="phase-tab" data-phase="phase4">Phase 4: Production</button>
+        </div>
+
+        <div class="content">
+            <div class="phase-content active" id="all">
+                <!-- Categories will be dynamically inserted here -->
+            </div>
+            <div class="phase-content" id="phase1"></div>
+            <div class="phase-content" id="phase2"></div>
+            <div class="phase-content" id="phase3"></div>
+            <div class="phase-content" id="phase4"></div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="expandAll()">Expand All</button>
+            <button class="btn btn-secondary" onclick="collapseAll()">Collapse All</button>
+            <button class="btn btn-secondary" onclick="resetProgress()">Reset Progress</button>
+            <button class="btn btn-secondary" onclick="exportProgress()">Export Progress</button>
+        </div>
+    </div>
+
+    <script>
+        const projectData = {
+            phase1: [
+                {
+                    name: "Database Models & Migrations",
+                    items: [
+                        "models/recurring_crawl.py - Recurring crawl configuration",
+                        "models/crawl_execution.py - Individual crawl run tracking",
+                        "models/pdp_document.py - PDP document storage metadata",
+                        "models/crawl_stats.py - Statistics and metrics",
+                        "alembic/ - Database migration scripts",
+                        "MongoDB: pdp_documents collection",
+                        "MongoDB: crawl_logs collection",
+                        "MongoDB: extraction_results collection",
+                        "db/sql_connection.py - SQLAlchemy connection manager",
+                        "db/mongo_connection.py - MongoDB connection manager",
+                        "db/repositories/crawl_repo.py - CRUD operations",
+                        "db/repositories/pdp_repo.py - CRUD operations"
+                    ]
+                },
+                {
+                    name: "API Layer - Basic Endpoints",
+                    items: [
+                        "api/main.py - FastAPI application entry point",
+                        "api/routes/crawls.py - Crawl management endpoints",
+                        "api/routes/pdp.py - PDP document endpoints",
+                        "api/schemas/ - Pydantic models for validation",
+                        "POST /api/crawls - Create new recurring crawl",
+                        "GET /api/crawls - List all crawls",
+                        "GET /api/crawls/{id} - Get specific crawl details",
+                        "PUT /api/crawls/{id} - Update crawl configuration",
+                        "DELETE /api/crawls/{id} - Delete/disable crawl"
+                    ]
+                },
+                {
+                    name: "Configuration Management",
+                    items: [
+                        "config/settings.py - Application settings",
+                        "config/database_config.py - Database configurations",
+                        "config/queue_config.py - Queue configurations",
+                        "config/scraper_config.py - Scraper settings",
+                        ".env.example - Environment variables template"
+                    ]
+                },
+                {
+                    name: "Docker Setup - Infrastructure",
+                    items: [
+                        "docker-compose.yml - Multi-container orchestration",
+                        "Dockerfile.api - API service",
+                        "PostgreSQL container configuration",
+                        "MongoDB container configuration",
+                        "Redis/RabbitMQ container configuration"
+                    ]
+                }
+            ],
+            phase2: [
+                {
+                    name: "Queue Management",
+                    items: [
+                        "queues/base_queue.py - Abstract base queue class",
+                        "queues/extractor_queue.py - Extractor queue operations",
+                        "queues/crawler_queue.py - Crawler queue operations",
+                        "queues/health_check.py - Queue health monitoring"
+                    ]
+                },
+                {
+                    name: "Extractor Worker",
+                    items: [
+                        "workers/extractor/main.py - Worker entry point",
+                        "workers/extractor/queue_listener.py - Listen to queue",
+                        "workers/extractor/category_processor.py - Process categories",
+                        "workers/extractor/pdp_creator.py - Create PDP documents",
+                        "workers/extractor/db_updater.py - Update SQL DB",
+                        "Dockerfile.extractor - Extractor worker container"
+                    ]
+                },
+                {
+                    name: "Crawler Worker",
+                    items: [
+                        "workers/crawler/main.py - Worker entry point",
+                        "workers/crawler/queue_listener.py - Listen to queue",
+                        "workers/crawler/scraper.py - Execute scraping with xPath",
+                        "workers/crawler/mongo_updater.py - Update MongoDB",
+                        "workers/crawler/status_reporter.py - Report completion",
+                        "Dockerfile.crawler - Crawler worker container"
+                    ]
+                },
+                {
+                    name: "Scraping & Extraction Utilities",
+                    items: [
+                        "scrapers/base_scraper.py - Abstract scraper class",
+                        "scrapers/selenium_scraper.py - Selenium-based scraping",
+                        "scrapers/requests_scraper.py - Requests-based scraping",
+                        "scrapers/xpath_evaluator.py - XPath execution engine",
+                        "scrapers/retry_handler.py - Retry logic",
+                        "scrapers/proxy_manager.py - Proxy rotation",
+                        "processors/html_parser.py - HTML parsing utilities",
+                        "processors/data_cleaner.py - Clean extracted data",
+                        "processors/data_validator.py - Validate scraped data"
+                    ]
+                },
+                {
+                    name: "Basic Airflow DAGs",
+                    items: [
+                        "config/airflow_config.py - Airflow-specific config",
+                        "dags/recurring_crawl_template.py - Template for each crawl",
+                        "tasks/start_crawl.py - Initialize crawl session",
+                        "tasks/queue_extractor.py - Add URLs to extractor queue",
+                        "tasks/queue_crawler.py - Add PDPs to crawler queue",
+                        "Dockerfile.airflow - Airflow container"
+                    ]
+                }
+            ],
+            phase3: [
+                {
+                    name: "Main DAG with Scheduling",
+                    items: [
+                        "dags/main_dag.py - Main orchestration DAG",
+                        "dags/dag_factory.py - Dynamically generate DAGs from DB",
+                        "tasks/wait_extractor.py - Wait for extraction completion",
+                        "tasks/wait_crawler.py - Wait for crawling completion",
+                        "tasks/update_status.py - Update crawl status in DB",
+                        "tasks/scheduler_check.py - Check and trigger scheduled crawls"
+                    ]
+                },
+                {
+                    name: "PDP Crawling Scheduler",
+                    items: [
+                        "scheduler/pdp_scheduler.py - Schedule PDP crawling jobs",
+                        "scheduler/frequency_manager.py - Manage crawl frequencies",
+                        "scheduler/queue_manager.py - Push jobs to queues",
+                        "Dockerfile.scheduler - PDP scheduler service"
+                    ]
+                },
+                {
+                    name: "Status Tracking & Updates",
+                    items: [
+                        "GET /api/crawls/{id}/status - Get crawl execution status",
+                        "GET /api/crawls/{id}/stats - Get crawl statistics",
+                        "POST /api/crawls/{id}/trigger - Manual trigger",
+                        "storage/pdp_storage.py - Store PDP documents",
+                        "storage/result_storage.py - Store crawl results",
+                        "storage/cache_manager.py - Cache management"
+                    ]
+                }
+            ],
+            phase4: [
+                {
+                    name: "Monitoring & Alerting",
+                    items: [
+                        "monitoring/metrics_collector.py - Collect crawl metrics",
+                        "monitoring/alerting.py - Alert on failures",
+                        "monitoring/dashboard_api.py - Metrics API for dashboard",
+                        "logging/structured_logger.py - Structured logging setup",
+                        "api/middleware/auth.py - Authentication middleware",
+                        "api/middleware/rate_limit.py - Rate limiting"
+                    ]
+                },
+                {
+                    name: "Error Handling & Retries",
+                    items: [
+                        "utils/retry_decorator.py - Retry decorator",
+                        "utils/error_handlers.py - Centralized error handling",
+                        "utils/validators.py - Input validation",
+                        "utils/response_parser.py - Parse API responses"
+                    ]
+                },
+                {
+                    name: "Testing Suite",
+                    items: [
+                        "tests/unit/test_scrapers.py - Unit tests for scrapers",
+                        "tests/unit/test_queues.py - Unit tests for queues",
+                        "tests/unit/test_workers.py - Unit tests for workers",
+                        "tests/integration/test_dag_execution.py - DAG integration tests",
+                        "tests/integration/test_end_to_end.py - End-to-end tests",
+                        "tests/fixtures/ - Test data fixtures"
+                    ]
+                },
+                {
+                    name: "Admin Interface",
+                    items: [
+                        "Admin page to create/manage recurring crawls",
+                        "Display crawl status and statistics",
+                        "Manual trigger interface",
+                        "Log viewer"
+                    ]
+                },
+                {
+                    name: "Additional Utilities",
+                    items: [
+                        "utils/date_helpers.py - Date/time utilities",
+                        "GET /api/pdp-docs - List PDP documents",
+                        "GET /api/pdp-docs/{id} - Get specific PDP document",
+                        "api/dependencies.py - Database session management"
+                    ]
+                }
+            ]
+        };
+
+        let checkedItems = JSON.parse(localStorage.getItem('scrapingProjectProgress')) || {};
+
+        function createCategoryHTML(category, phaseId, categoryIndex) {
+            const categoryId = `${phaseId}-cat-${categoryIndex}`;
+            const completed = category.items.filter((_, i) => checkedItems[`${categoryId}-${i}`]).length;
+            const total = category.items.length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            return `
+                <div class="category" id="${categoryId}">
+                    <div class="category-header" onclick="toggleCategory('${categoryId}')">
+                        <div class="category-title">${category.name}</div>
+                        <div class="category-progress">
+                            <span class="progress-text">${completed}/${total}</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                    </div>
+                    <div class="category-items">
+                        ${category.items.map((item, index) => {
+                            const itemId = `${categoryId}-${index}`;
+                            const isChecked = checkedItems[itemId] || false;
+                            return `
+                                <div class="checklist-item">
+                                    <input type="checkbox" class="checkbox" id="${itemId}" 
+                                           ${isChecked ? 'checked' : ''} 
+                                           onchange="handleCheck('${itemId}')">
+                                    <label for="${itemId}" class="item-text ${isChecked ? 'completed' : ''}">${item}</label>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function initializeUI() {
+            // Populate "All Tasks" section
+            const allContainer = document.getElementById('all');
+            let allHTML = '';
+            Object.keys(projectData).forEach(phaseId => {
+                projectData[phaseId].forEach((category, idx) => {
+                    allHTML += createCategoryHTML(category, phaseId, idx);
+                });
+            });
+            allContainer.innerHTML = allHTML;
+
+            // Populate individual phase sections
+            Object.keys(projectData).forEach(phaseId => {
+                const phaseContainer = document.getElementById(phaseId);
+                let phaseHTML = '';
+                projectData[phaseId].forEach((category, idx) => {
+                    phaseHTML += createCategoryHTML(category, phaseId, idx);
+                });
+                phaseContainer.innerHTML = phaseHTML;
+            });
+
+            updateStats();
+        }
+
+        function toggleCategory(categoryId) {
+            const category = document.getElementById(categoryId);
+            category.classList.toggle('expanded');
+        }
+
+        function handleCheck(itemId) {
+            const checkbox = document.getElementById(itemId);
+            checkedItems[itemId] = checkbox.checked;
+            
+            const label = checkbox.nextElementSibling;
+            if (checkbox.checked) {
+                label.classList.add('completed');
+            } else {
+                label.classList.remove('completed');
+            }
+
+            localStorage.setItem('scrapingProjectProgress', JSON.stringify(checkedItems));
+            updateStats();
+            updateCategoryProgress(itemId);
+        }
+
+        function updateCategoryProgress(itemId) {
+            const categoryId = itemId.substring(0, itemId.lastIndexOf('-'));
+            const category = document.getElementById(categoryId);
+            const checkboxes = category.querySelectorAll('.checkbox');
+            const completed = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const total = checkboxes.length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            const progressFill = category.querySelector('.progress-fill');
+            const progressText = category.querySelector('.progress-text');
+            
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${completed}/${total}`;
+        }
+
+        function updateStats() {
+            const allCheckboxes = document.querySelectorAll('.checkbox');
+            const completed = Array.from(allCheckboxes).filter(cb => cb.checked).length;
+            const total = allCheckboxes.length;
+            const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('totalCompleted').textContent = completed;
+            document.getElementById('totalPending').textContent = total - completed;
+            document.getElementById('overallProgress').textContent = `${progress}%`;
+
+            // Determine current phase
+            let currentPhase = 'Foundation';
+            if (progress >= 75) currentPhase = 'Production';
+            else if (progress >= 50) currentPhase = 'Orchestration';
+            else if (progress >= 25) currentPhase = 'Core Logic';
+            
+            document.getElementById('currentPhase').textContent = currentPhase;
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.category').forEach(cat => {
+                cat.classList.add('expanded');
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.category').forEach(cat => {
+                cat.classList.remove('expanded');
+            });
+        }
+
+        function resetProgress() {
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                localStorage.removeItem('scrapingProjectProgress');
+                location.reload();
+            }
+        }
+
+        function exportProgress() {
+            const report = {
+                exportDate: new Date().toISOString(),
+                progress: checkedItems,
+                stats: {
+                    totalCompleted: document.getElementById('totalCompleted').textContent,
+                    totalPending: document.getElementById('totalPending').textContent,
+                    overallProgress: document.getElementById('overallProgress').textContent
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scraping-architecture-progress-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Phase tab switching
+        document.querySelectorAll('.phase-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const phase = this.getAttribute('data-phase');
+                
+                document.querySelectorAll('.phase-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.phase-content').forEach(c => c.classList.remove('active'));
+                
+                this.classList.add('active');
+                document.getElementById(phase).classList.add('active');
+            });
+        });
+
+        // Initialize on page load
+        initializeUI();
+    </script>
+</body>
+</html>
