@@ -19,31 +19,37 @@ A lightweight password manager with a FastAPI backend and a simple web UI. Data 
   - `index.html` – single-page UI.
   - `app.js` – frontend interactions (CRUD + generator).
   - `styles.css` – styles for the UI.
+  - `favicon.svg` / `favicon.ico` – application favicons.
+- `pyproject.toml` & `uv.lock`
+  - Project specification and locked dependencies managed with `uv`.
 - `Dockerfile`
-  - Container definition (Python 3.11 slim) to run the API/UI.
+  - Container definition (Python 3.11 slim) using `uv` for fast, reproducible builds.
 - `docker-compose.yml`
   - Exposes port 8000 and bind-mounts `Saved.pkl` for persistence.
 - `run-compose.sh`
   - Convenience script to start/stop the app with Docker Compose. Creates an empty `Saved.pkl` if not present.
-- `requirements.txt`
-  - Python dependencies.
 - `TestingCodes/`
   - Misc. sample/testing scripts (not required for normal use).
 
 
 ## How to Run
 
-### 1) Local (Python)
-Prereqs: Python 3.11+ recommended (3.9+ supported); pip
+### 1) Local (with uv)
+Prereqs: [uv](https://docs.astral.sh/uv/) installed.
 
 ```bash
-# optional: create and activate a virtual env
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
-pip install -r requirements.txt
+# Sync dependencies and create virtual environment automatically
+uv sync
 
 # Run the API with auto-reload for development
+uv run uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Or using standard Python / pip:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install .
 uvicorn api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -65,6 +71,7 @@ docker build -t password-manager:latest .
 docker run --rm \
   -p 8000:8000 \
   -v "$(pwd)/Saved.pkl:/app/Saved.pkl" \
+  -v "$HOME/.env:/root/.env:ro" \
   password-manager:latest
 ```
 
@@ -137,8 +144,28 @@ Notes:
 
 
 ## Security Notes
-- Data is persisted to a local pickle file (`Saved.pkl`) and is not encrypted. Do not use this for sensitive production secrets.
-- Intended for local/offline experimentation. If exposing the API, review and tighten CORS and implement encryption/secrets management.
+- `password` and every `password_history` entry are **encrypted at rest** in `Saved.pkl` (see *Encryption* below). Titles, emails and `title_history` are stored in plaintext.
+- Data is decrypted in memory while the app runs, and the API/UI return plaintext — keep the server bound to localhost.
+- Intended for local/offline use. If exposing the API, review and tighten CORS and add authentication.
+
+
+## Encryption
+Hybrid RSA-OAEP (3072-bit) + AES-256-GCM, implemented in `crypto_utils.py`:
+- **Public key** – `public_key.pem` in this folder (configured in `config.py`). Encrypt-only; safe to commit.
+- **Private key** – `SAVING_PASSWORDS_PRIVATE_KEY` in `~/.env` (base64 DER, `chmod 600`). Required to read `Saved.pkl`.
+- Encrypted values look like `enc:v1:<base64>`. Unprefixed (legacy plaintext) values are still readable and get encrypted on the next save.
+
+First-time setup:
+```bash
+uv run python generate_keys.py     # creates public_key.pem + writes private key to ~/.env
+uv run python migrate_encrypt.py   # encrypts all existing passwords + history (verified, with backup)
+rm -P Saved.pkl.plaintext-backup-*  # once you've confirmed the app works
+```
+
+> **Back up the private key offline.** If it is lost, the stored passwords cannot be recovered.
+> If it is missing or doesn't match `public_key.pem`, the app refuses to start rather than risk overwriting your data.
+
+Overrides: `SAVING_PASSWORDS_PRIVATE_KEY` (env var), `SAVING_PASSWORDS_ENV_FILE`, `SAVING_PASSWORDS_PUBLIC_KEY_PATH`.
 
 
 ## Troubleshooting

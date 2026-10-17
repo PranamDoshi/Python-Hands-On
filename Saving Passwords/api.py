@@ -18,13 +18,11 @@ from StorePasswords import (
 # Load persisted data on startup if present
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    try:
-        pkl_path = Path(dictPickleFile)
-        if pkl_path.exists():
-            SavedPasswords.readFromPickle(str(pkl_path))
-    except Exception:
-        # If reading fails, continue with in-memory defaults
-        pass
+    pkl_path = Path(dictPickleFile)
+    if pkl_path.exists():
+        # Do NOT swallow errors here: if decryption fails (e.g. private key missing from ~/.env)
+        # starting with an empty dict would overwrite the real file on the next save/shutdown.
+        SavedPasswords.readFromPickle(str(pkl_path))
     yield
     SavedPasswords.dumpToPickle(dictPickleFile)
 
@@ -52,6 +50,15 @@ async def root() -> HTMLResponse:
     if index_html.exists():
         return FileResponse(str(index_html))
     return HTMLResponse("<h1>Password Manager API</h1>")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon() -> FileResponse:
+    favicon_path = static_dir / "favicon.ico"
+    if favicon_path.exists():
+        return FileResponse(str(favicon_path))
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
 
 
 @app.get("/api/health")
@@ -97,8 +104,8 @@ async def save_password(req: SaveRequest):
     SavedPasswords.savePassword(req.title, req.password, email=req.email)
     try:
         SavedPasswords.dumpToPickle(dictPickleFile)
-    except Exception:
-        pass
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to persist password: {e}")
     return {"status": "ok", "title": req.title}
 
 

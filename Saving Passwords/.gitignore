@@ -1,0 +1,3 @@
+# Plaintext backups created by migrate_encrypt.py and temp files from atomic writes
+Saved.pkl.*
+*.tmp

@@ -2,8 +2,10 @@ import pickle
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-import json, random, string
+import json, os, random, string
 from pprint import pprint, PrettyPrinter
+
+from crypto_utils import encrypt_records, decrypt_records
 
 MIN_PASSWORD_LENGTH = 8
 
@@ -92,13 +94,25 @@ class SavedPasswords:
 
     @staticmethod
     def dumpToPickle(filepath: str):
+        # Encrypt `password` and `password_history` with the public key before persisting.
+        # Encrypt + serialize fully in memory first, so a failure never truncates the existing file.
+        # Then overwrite IN PLACE (no rename): Saved.pkl is a single-file Docker bind mount and
+        # replacing it via rename breaks the mount (EBUSY / stale inode -> empty file).
+        data = pickle.dumps(encrypt_records(SavedPasswords.passwords))
         with open(filepath, 'wb') as file:
-            pickle.dump(SavedPasswords.passwords, file)
+            file.write(data)
+            file.flush()
+            os.fsync(file.fileno())
 
     @staticmethod
     def readFromPickle(filepath: str):
+        # An empty file (e.g. created by run-compose.sh) means "no passwords yet".
+        if os.path.getsize(filepath) == 0:
+            SavedPasswords.passwords = {}
+            return
         with open(filepath, 'rb') as file:
-            SavedPasswords.passwords = pickle.load(file)
+            # Decrypt with the private key from ~/.env. Legacy plaintext values pass through.
+            SavedPasswords.passwords = decrypt_records(pickle.load(file))
 
     @staticmethod
     def dumpToJSON():

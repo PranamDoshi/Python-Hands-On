@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer gradient border / badge -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#brandGradient)"/>
+
+  <!-- Dark slate inner container matching UI background -->
+  <rect x="22" y="22" width="212" height="212" rx="44" fill="#0f172a" fill-opacity="0.95"/>
+
+  <!-- Padlock Shackle -->
+  <path d="M 86 128 V 86 A 42 42 0 0 1 170 86 V 128" 
+        fill="none" 
+        stroke="#ffffff" 
+        stroke-width="20" 
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Padlock Body -->
+  <rect x="60" y="118" width="136" height="90" rx="22" fill="#ffffff"/>
+
+  <!-- Keyhole in Padlock Body -->
+  <circle cx="128" cy="152" r="14" fill="#6366f1"/>
+  <polygon points="121,156 135,156 139,184 117,184" fill="#6366f1"/>
+</svg>

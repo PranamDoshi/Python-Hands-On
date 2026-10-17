@@ -1,24 +1,27 @@
 # syntax=docker/dockerfile:1
 FROM python:3.11-slim
 
+# Install uv from official Astral image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# System deps (optional, keep minimal)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
- && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project
 
-# Python deps
-COPY requirements.txt ./
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Place virtual environment executables in PATH
+ENV PATH="/app/.venv/bin:$PATH"
 
 # App source
 COPY . .
 
 EXPOSE 8000
 
-CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+

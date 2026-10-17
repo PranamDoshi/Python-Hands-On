@@ -15,3 +15,5 @@ build
 dist
 node_modules
 Saved.pkl
+Saved.pkl.*
+*.tmp
