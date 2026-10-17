@@ -3,122 +3,249 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Password Manager</title>
+  <meta name="color-scheme" content="dark" />
+  <title>Vault · Password Manager</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
   <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/static/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand">
-      <div class="logo">🗝️</div>
-      <h1>Password Manager</h1>
-    </div>
-    <div class="header-actions">
-      <button id="refreshBtn" class="btn ghost">Refresh</button>
-      <a class="btn primary" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
-    </div>
-  </header>
+  <!-- Icon sprite (lucide-style strokes) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.4 3.3M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol>
+      <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></symbol>
+      <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5V21h16"/></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+      <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></symbol>
+      <symbol id="i-braces" viewBox="0 0 24 24"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/></symbol>
+    </defs>
+  </svg>
 
-  <main class="container">
-    <section class="card grid two">
-      <div>
-        <h2>Add / Update Password</h2>
-        <form id="saveForm" class="form">
-          <label>
-            <span>Title</span>
-            <input id="titleInput" type="text" placeholder="e.g. Gmail" required />
-          </label>
-          <label>
-            <span>Password</span>
-            <div class="pass-row">
-              <input id="passwordInput" type="text" placeholder="Enter or generate" required />
-              <button id="genQuickBtn" type="button" class="btn">Generate</button>
+  <div class="app" id="app" data-view="empty">
+    <!-- ───────────── Sidebar ───────────── -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/static/favicon.svg" alt="" class="brand-mark" />
+        <div class="brand-text">
+          <span class="brand-name">Vault</span>
+          <span class="brand-sub">Encrypted locally</span>
+        </div>
+        <button id="refreshBtn" class="icon-btn" title="Reload entries" aria-label="Reload entries">
+          <svg class="ic"><use href="#i-refresh"/></svg>
+        </button>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item" data-nav="editor">
+          <svg class="ic"><use href="#i-plus"/></svg><span>Add / Update</span>
+        </button>
+        <button class="nav-item" data-nav="generator">
+          <svg class="ic"><use href="#i-dice"/></svg><span>Generator</span>
+        </button>
+      </nav>
+
+      <div class="search">
+        <svg class="ic"><use href="#i-search"/></svg>
+        <input id="searchInput" type="search" placeholder="Search vault" autocomplete="off" spellcheck="false" />
+        <kbd>/</kbd>
+      </div>
+
+      <div class="list-head">
+        <span>Entries</span>
+        <span id="entryCount" class="count">0</span>
+      </div>
+      <div id="titles" class="entries" role="listbox" aria-label="Saved passwords"></div>
+
+      <a class="sidebar-foot" href="/docs" target="_blank" rel="noreferrer">
+        <svg class="ic"><use href="#i-book"/></svg><span>API docs</span>
+      </a>
+    </aside>
+
+    <!-- ───────────── Main ───────────── -->
+    <main class="main">
+      <!-- Empty state -->
+      <section class="view view-empty" data-view-name="empty">
+        <div class="empty">
+          <div class="empty-mark"><svg class="ic"><use href="#i-lock"/></svg></div>
+          <h2>Your vault</h2>
+          <p>Select an entry to view its details, or create something new.</p>
+          <div class="row center">
+            <button class="btn primary" data-nav="editor"><svg class="ic"><use href="#i-plus"/></svg>New entry</button>
+            <button class="btn" data-nav="generator"><svg class="ic"><use href="#i-dice"/></svg>Generate</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Entry details -->
+      <section class="view view-entry" data-view-name="entry">
+        <header class="view-head">
+          <button class="icon-btn back" data-nav="empty" aria-label="Back"><svg class="ic"><use href="#i-arrow-left"/></svg></button>
+          <div id="entryAvatar" class="avatar lg"></div>
+          <div class="head-text">
+            <h1 id="entryTitle"></h1>
+            <p id="entryMeta" class="muted"></p>
+          </div>
+          <div class="head-actions">
+            <button id="renameBtn" class="btn"><svg class="ic"><use href="#i-type"/></svg>Rename</button>
+            <button id="deleteBtn" class="btn danger-ghost"><svg class="ic"><use href="#i-trash"/></svg>Delete</button>
+          </div>
+        </header>
+
+        <div class="view-body">
+          <!-- Password -->
+          <div class="panel">
+            <div class="panel-label"><svg class="ic"><use href="#i-lock"/></svg>Password</div>
+            <div class="secret" id="secretRow">
+              <input id="entryPassword" class="mono secret-input" type="password" readonly spellcheck="false" autocomplete="off" />
+              <div class="secret-actions view-mode">
+                <button class="icon-btn" id="pwToggle" title="Show" aria-label="Show password"><svg class="ic"><use href="#i-eye"/></svg></button>
+                <button class="icon-btn" id="pwCopy" title="Copy" aria-label="Copy password"><svg class="ic"><use href="#i-copy"/></svg></button>
+                <button class="btn sm" id="pwEdit"><svg class="ic"><use href="#i-edit"/></svg>Update</button>
+              </div>
+              <div class="secret-actions edit-mode">
+                <button class="icon-btn" id="pwGen" title="Generate" aria-label="Generate password"><svg class="ic"><use href="#i-dice"/></svg></button>
+                <button class="btn sm ghost" id="pwCancel">Cancel</button>
+                <button class="btn sm primary" id="pwSave"><svg class="ic"><use href="#i-check"/></svg>Save</button>
+              </div>
             </div>
-          </label>
-          <label>
-            <span>Email (optional)</span>
-            <input id="emailInput" type="email" placeholder="name@example.com" />
-          </label>
-          <div class="row">
-            <button class="btn primary" type="submit">Save</button>
-            <button class="btn ghost" type="reset">Clear</button>
+            <div class="strength" id="entryStrength"><span class="bar"><i></i></span><span class="label"></span></div>
           </div>
-        </form>
-      </div>
 
-      <div>
-        <h2>Generator</h2>
-        <div class="generator">
-          <div class="row">
-            <label for="lenRange">Length</label>
-            <input id="lenRange" type="range" min="8" max="48" step="1" value="12" />
-            <output id="lenOut">12</output>
-          </div>
-          <div class="row">
-            <button id="genBtn" class="btn">Generate</button>
-            <input id="genResult" class="mono" type="text" readonly />
-            <button id="copyBtn" class="btn ghost" title="Copy">Copy</button>
+          <!-- All other fields from the record -->
+          <div id="entryFields" class="fields"></div>
+
+          <!-- Histories -->
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-label"><svg class="ic"><use href="#i-history"/></svg>Title history <span id="titleHistCount" class="count"></span></div>
+              <ol id="titleHistory" class="timeline"></ol>
+            </div>
+            <div class="panel">
+              <div class="panel-label">
+                <svg class="ic"><use href="#i-history"/></svg>Password history <span id="pwHistCount" class="count"></span>
+                <button class="link-btn" id="pwHistToggle">Reveal</button>
+              </div>
+              <ol id="passwordHistory" class="timeline masked"></ol>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="card">
-      <div class="row space">
-        <h2>Saved Passwords</h2>
-        <input id="searchInput" type="search" placeholder="Search titles..." />
-      </div>
-      <div id="titles" class="titles"></div>
-    </section>
-
-    <section class="card" id="detailsCard" hidden>
-      <div class="row space">
-        <h2 id="detailsTitle">Details</h2>
-        <div class="row gap">
-          <button id="renameBtn" class="btn">Rename</button>
-          <button id="deleteBtn" class="btn danger">Delete</button>
+      <!-- Add / Update -->
+      <section class="view view-editor" data-view-name="editor">
+        <header class="view-head">
+          <button class="icon-btn back" data-nav="empty" aria-label="Back"><svg class="ic"><use href="#i-arrow-left"/></svg></button>
+          <div class="head-text">
+            <h1>Add or update</h1>
+            <p class="muted">Use an existing title to update its password — history is kept.</p>
+          </div>
+        </header>
+        <div class="view-body narrow">
+          <form id="saveForm" class="panel form" autocomplete="off">
+            <label class="field">
+              <span class="field-label">Title</span>
+              <input id="titleInput" type="text" list="titleOptions" placeholder="e.g. GitHub" required spellcheck="false" />
+              <datalist id="titleOptions"></datalist>
+              <span id="titleHint" class="hint"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Password</span>
+              <div class="input-group">
+                <input id="passwordInput" class="mono" type="password" placeholder="Enter or generate" required spellcheck="false" />
+                <button type="button" id="formPwToggle" class="icon-btn" aria-label="Show password"><svg class="ic"><use href="#i-eye"/></svg></button>
+                <button type="button" id="genQuickBtn" class="icon-btn" title="Generate" aria-label="Generate password"><svg class="ic"><use href="#i-dice"/></svg></button>
+              </div>
+              <div class="strength" id="formStrength"><span class="bar"><i></i></span><span class="label"></span></div>
+            </label>
+            <label class="field" id="emailField">
+              <span class="field-label">Email <span class="muted">· optional</span></span>
+              <input id="emailInput" type="email" placeholder="name@example.com" spellcheck="false" />
+            </label>
+            <div class="row end">
+              <button class="btn ghost" type="reset">Clear</button>
+              <button class="btn primary" type="submit" id="saveBtn"><svg class="ic"><use href="#i-check"/></svg><span>Save entry</span></button>
+            </div>
+          </form>
         </div>
-      </div>
-      <div id="detailsBody"></div>
-    </section>
-  </main>
+      </section>
 
-  <template id="titleItemTpl">
-    <button class="title-item"></button>
-  </template>
+      <!-- Generator -->
+      <section class="view view-generator" data-view-name="generator">
+        <header class="view-head">
+          <button class="icon-btn back" data-nav="empty" aria-label="Back"><svg class="ic"><use href="#i-arrow-left"/></svg></button>
+          <div class="head-text">
+            <h1>Generator</h1>
+            <p class="muted">Always includes lowercase, uppercase, digits and symbols.</p>
+          </div>
+        </header>
+        <div class="view-body narrow">
+          <div class="panel gen">
+            <div class="gen-output">
+              <output id="genResult" class="mono">—</output>
+              <div class="gen-actions">
+                <button id="genBtn" class="icon-btn" title="Regenerate" aria-label="Regenerate"><svg class="ic"><use href="#i-refresh"/></svg></button>
+                <button id="copyBtn" class="icon-btn" title="Copy" aria-label="Copy"><svg class="ic"><use href="#i-copy"/></svg></button>
+              </div>
+            </div>
+            <div class="strength" id="genStrength"><span class="bar"><i></i></span><span class="label"></span></div>
+            <div class="slider-row">
+              <span class="field-label">Length</span>
+              <input id="lenRange" type="range" min="8" max="64" step="1" value="20" />
+              <output id="lenOut" class="pill mono">20</output>
+            </div>
+            <div class="row end">
+              <button id="useGenBtn" class="btn primary"><svg class="ic"><use href="#i-plus"/></svg>Use in new entry</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-  <template id="detailsTpl">
-    <div class="kv">
-      <div class="k">Title</div>
-      <div class="v mono" data-k="title"></div>
-    </div>
-    <div class="kv">
-      <div class="k">Password</div>
-      <div class="v">
-        <input class="mono" type="password" data-k="password" />
-        <button class="btn ghost sm" data-action="toggle">Show</button>
-        <button class="btn ghost sm" data-action="copy">Copy</button>
-        <button class="btn primary sm" data-action="update">Update</button>
+  <!-- Rename dialog -->
+  <dialog id="renameDialog" class="dialog">
+    <form method="dialog" class="dialog-body">
+      <h3>Rename entry</h3>
+      <p class="muted">The previous title is preserved in the title history.</p>
+      <input id="renameInput" type="text" required spellcheck="false" />
+      <div class="row end">
+        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn primary" value="ok">Rename</button>
       </div>
-    </div>
-    <div class="kv">
-      <div class="k">Email</div>
-      <div class="v mono" data-k="email"></div>
-    </div>
-    <div class="kv">
-      <div class="k">Title History</div>
-      <div class="v mono" data-k="title_history"></div>
-    </div>
-    <div class="kv">
-      <div class="k">Password History</div>
-      <div class="v mono" data-k="password_history"></div>
-    </div>
-  </template>
+    </form>
+  </dialog>
+
+  <!-- Delete dialog -->
+  <dialog id="deleteDialog" class="dialog">
+    <form method="dialog" class="dialog-body">
+      <h3>Delete entry?</h3>
+      <p class="muted">“<span id="deleteName"></span>” and its full history will be permanently removed.</p>
+      <div class="row end">
+        <button class="btn ghost" value="cancel">Cancel</button>
+        <button class="btn danger" value="ok">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
 
   <script src="/static/app.js" type="module"></script>
 </body>
