@@ -16,6 +16,7 @@ const json = (method, body) => ({
 });
 
 const api = {
+  all: () => request('/api/passwords', {}, 'Failed to load entries'),
   titles: () => request('/api/titles', {}, 'Failed to load entries'),
   get: (title) => request(`/api/password/${encodeURIComponent(title)}`, {}, 'Entry not found'),
   save: ({ title, password, email }) =>
@@ -109,22 +110,23 @@ function parseHistory(entry) {
   return m ? { date: m[1], value: m[2] } : { date: '', value: s };
 }
 
+const STRENGTH_TIERS = [
+  [40, 1, 'Weak', 'var(--red)'],
+  [64, 2, 'Fair', 'var(--amber)'],
+  [100, 3, 'Strong', 'var(--green)'],
+  [Infinity, 4, 'Excellent', 'var(--cyan)'],
+];
+
 function strengthOf(pwd) {
-  if (!pwd) return { level: 0, pct: 0, label: '' };
+  if (!pwd) return { level: 0, name: '', bits: 0, pct: 0, label: '', color: '' };
   let pool = 0;
   if (/[a-z]/.test(pwd)) pool += 26;
   if (/[A-Z]/.test(pwd)) pool += 26;
   if (/\d/.test(pwd)) pool += 10;
   if (/[^A-Za-z0-9]/.test(pwd)) pool += 33;
   const bits = Math.round(pwd.length * Math.log2(Math.max(pool, 1)));
-  const tiers = [
-    [40, 1, 'Weak', 'var(--red)'],
-    [64, 2, 'Fair', 'var(--amber)'],
-    [100, 3, 'Strong', 'var(--green)'],
-    [Infinity, 4, 'Excellent', 'var(--green)'],
-  ];
-  const [, level, name, color] = tiers.find(([max]) => bits < max);
-  return { level, pct: Math.min(100, (bits / 128) * 100), label: `${name} · ${bits} bits`, color };
+  const [, level, name, color] = STRENGTH_TIERS.find(([max]) => bits < max);
+  return { level, name, bits, pct: Math.min(100, (bits / 128) * 100), label: `${name} · ${bits} bits`, color };
 }
 function renderStrength(node, pwd) {
   const s = strengthOf(pwd);
@@ -140,10 +142,13 @@ function renderStrength(node, pwd) {
 // ──────────────────────────────────────────────────────────
 const app = $('#app');
 const titlesWrap = $('#titles');
+const tierFiltersWrap = $('#tierFilters');
 const searchInput = $('#searchInput');
 const entryCount = $('#entryCount');
 
 let titlesCache = [];
+let recordsCache = {};
+let activeTierFilter = 0; // 0 = all, 1 = Weak, 2 = Fair, 3 = Strong, 4 = Excellent
 let selectedTitle = null;
 let currentRecord = null;
 
@@ -159,40 +164,107 @@ function setView(view) {
 }
 
 // ──────────────────────────────────────────────────────────
-// Sidebar list
+// Sidebar list & strength tier filters
 // ──────────────────────────────────────────────────────────
 async function loadTitles() {
   try {
-    titlesCache = await api.titles();
+    const all = await api.all();
+    recordsCache = all && typeof all === 'object' ? all : {};
+    titlesCache = Object.keys(recordsCache);
   } catch (e) {
-    toast(e.message, 'error');
-    titlesCache = [];
+    try {
+      titlesCache = await api.titles();
+    } catch (err) {
+      toast(err.message, 'error');
+      titlesCache = [];
+    }
   }
   titlesCache.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
   $('#titleOptions').replaceChildren(...titlesCache.map((t) => el('option', { value: t })));
+  renderTierFilters();
   renderTitles();
+}
+
+function tierForTitle(title) {
+  const pwd = recordsCache[title]?.password || '';
+  return strengthOf(pwd);
+}
+
+function renderTierFilters() {
+  if (!tierFiltersWrap) return;
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  for (const t of titlesCache) {
+    const { level } = tierForTitle(t);
+    if (counts[level] !== undefined) counts[level] += 1;
+  }
+  const chips = [
+    el(
+      'button',
+      {
+        type: 'button',
+        class: `tier-chip${activeTierFilter === 0 ? ' active' : ''}`,
+        dataset: { tier: '0' },
+        onclick: () => { activeTierFilter = 0; renderTierFilters(); renderTitles(); },
+      },
+      'All',
+      el('span', { class: 'num' }, titlesCache.length)
+    ),
+    ...STRENGTH_TIERS.map(([, level, name]) =>
+      el(
+        'button',
+        {
+          type: 'button',
+          class: `tier-chip${activeTierFilter === level ? ' active' : ''}`,
+          dataset: { tier: String(level) },
+          title: `Show ${name.toLowerCase()} passwords`,
+          onclick: () => {
+            activeTierFilter = activeTierFilter === level ? 0 : level;
+            renderTierFilters();
+            renderTitles();
+          },
+        },
+        el('span', { class: 'dot' }),
+        name,
+        el('span', { class: 'num' }, counts[level])
+      )
+    ),
+  ];
+  tierFiltersWrap.replaceChildren(...chips);
 }
 
 function renderTitles() {
   const q = searchInput.value.toLowerCase().trim();
-  const list = q ? titlesCache.filter((t) => t.toLowerCase().includes(q)) : titlesCache;
-  entryCount.textContent = q ? `${list.length}/${titlesCache.length}` : titlesCache.length;
+  const list = titlesCache.filter((t) => {
+    if (q && !t.toLowerCase().includes(q)) return false;
+    if (activeTierFilter && tierForTitle(t).level !== activeTierFilter) return false;
+    return true;
+  });
+  entryCount.textContent =
+    list.length !== titlesCache.length ? `${list.length}/${titlesCache.length}` : titlesCache.length;
 
   if (!list.length) {
     titlesWrap.replaceChildren(
-      el('div', { class: 'none' }, titlesCache.length ? 'No matches' : 'No entries yet')
+      el('div', { class: 'none' }, titlesCache.length ? 'No matching entries' : 'No entries yet')
     );
     return;
   }
   titlesWrap.replaceChildren(
-    ...list.map((title) =>
-      el(
+    ...list.map((title) => {
+      const s = tierForTitle(title);
+      return el(
         'button',
-        { class: 'entry', role: 'option', dataset: { title }, onclick: () => openEntry(title) },
+        {
+          class: 'entry',
+          role: 'option',
+          title: s.label ? `${title} — ${s.label}` : title,
+          dataset: { title, tier: String(s.level || 0) },
+          onclick: () => openEntry(title),
+        },
         avatar(title),
-        el('span', { class: 'entry-name' }, title)
-      )
-    )
+        el('span', { class: 'entry-name' }, title),
+        s.name ? el('span', { class: 'entry-tier' }, s.name) : null
+      );
+    })
   );
   highlightActive();
 }
@@ -357,9 +429,11 @@ $('#pwSave').addEventListener('click', async () => {
   if (!pwd) { toast('Password cannot be empty', 'error'); return; }
   if (pwd === currentRecord?.password) { exitEditMode(); setMasked(true); return; }
   try {
-    await api.save({ title: selectedTitle, password: pwd, email: currentRecord?.email });
+    const title = selectedTitle;
+    await api.save({ title, password: pwd, email: currentRecord?.email });
     toast('Password updated');
-    await openEntry(selectedTitle);
+    await loadTitles();
+    await openEntry(title);
   } catch (e) { toast(e.message, 'error'); }
 });
 $('#pwHistToggle').addEventListener('click', () =>
