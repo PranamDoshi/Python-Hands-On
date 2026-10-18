@@ -1,30 +1,23 @@
-"""Two-layer authentication for Saving Passwords:
-1. Edge Origin Protection: Cloudflare Zero Trust (Access) RS256 JWT verification
-   via ``Cf-Access-Jwt-Assertion`` header / ``CF_Authorization`` cookie.
-2. Application Master Password: Stateless PBKDF2 + HMAC-SHA256 signed session
-   cookies (``vault_session``) and Bearer tokens with brute-force rate limiting.
+"""Application Master Password Authentication for Saving Passwords.
+
+Provides stateless PBKDF2-HMAC-SHA256 password verification, HMAC-SHA256 signed
+session cookies (``vault_session``) and Bearer tokens that survive Render
+container restarts, and per-IP brute-force rate limiting.
 """
-import base64
 import hashlib
 import hmac
-import json
 import os
 import secrets
 import time
-import urllib.request
 from collections import defaultdict, deque
 from functools import lru_cache
 from typing import Deque, Dict, Optional
 
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from dotenv import dotenv_values
 from fastapi import HTTPException, Request, Response, status
 
 from config import (
     AUTH_PASSWORD_ENV_VAR,
-    CF_ACCESS_AUD_ENV_VAR,
-    CF_ACCESS_TEAM_DOMAIN_ENV_VAR,
     LOGIN_MAX_ATTEMPTS,
     LOGIN_WINDOW_SECONDS,
     PRIVATE_KEY_ENV_FILE,
@@ -135,9 +128,6 @@ _failed_attempts: Dict[str, Deque[float]] = defaultdict(deque)
 
 
 def get_client_ip(request: Request) -> str:
-    cf_ip = request.headers.get("cf-connecting-ip")
-    if cf_ip:
-        return cf_ip.strip()
     xff = request.headers.get("x-forwarded-for")
     if xff:
         return xff.split(",")[0].strip()
@@ -220,95 +210,3 @@ async def require_auth(request: Request) -> None:
             detail="Vault is locked. Please enter your master password.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-
-# ── Cloudflare Access JWT Verification (Origin Bypass Protection) ──────────
-_cf_jwks_cache: Dict[str, rsa.RSAPublicKey] = {}
-_cf_jwks_last_fetch: float = 0.0
-_CF_JWKS_TTL = 3600.0
-_CF_JWKS_MIN_REFRESH_INTERVAL = 60.0
-
-
-def _b64url_decode(data: str) -> bytes:
-    rem = len(data) % 4
-    if rem:
-        data += "=" * (4 - rem)
-    return base64.urlsafe_b64decode(data.encode("ascii"))
-
-
-def get_cf_access_config() -> tuple[Optional[str], Optional[str]]:
-    """Return (issuer_url, aud_tag) if Cloudflare Zero Trust verification is configured."""
-    domain = _read_env_setting(CF_ACCESS_TEAM_DOMAIN_ENV_VAR)
-    aud = _read_env_setting(CF_ACCESS_AUD_ENV_VAR)
-    if not domain or not aud:
-        return None, None
-    domain = domain.removeprefix("https://").removeprefix("http://").rstrip("/")
-    if not domain.endswith(".cloudflareaccess.com"):
-        domain = f"{domain}.cloudflareaccess.com"
-    return f"https://{domain}", aud
-
-
-def _fetch_cf_public_keys(issuer: str, force: bool = False) -> Dict[str, rsa.RSAPublicKey]:
-    global _cf_jwks_cache, _cf_jwks_last_fetch
-    now = time.monotonic()
-    if not force and _cf_jwks_cache and (now - _cf_jwks_last_fetch) < _CF_JWKS_TTL:
-        return _cf_jwks_cache
-    if force and (now - _cf_jwks_last_fetch) < _CF_JWKS_MIN_REFRESH_INTERVAL and _cf_jwks_cache:
-        return _cf_jwks_cache
-
-    certs_url = f"{issuer}/cdn-cgi/access/certs"
-    req = urllib.request.Request(certs_url, headers={"User-Agent": "SavingPasswords-Vault/1.0"})
-    with urllib.request.urlopen(req, timeout=5) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-
-    keys: Dict[str, rsa.RSAPublicKey] = {}
-    for jwk in data.get("keys", []):
-        if jwk.get("kty") == "RSA" and "n" in jwk and "e" in jwk and "kid" in jwk:
-            n = int.from_bytes(_b64url_decode(jwk["n"]), "big")
-            e = int.from_bytes(_b64url_decode(jwk["e"]), "big")
-            keys[jwk["kid"]] = rsa.RSAPublicNumbers(e, n).public_key()
-
-    if keys:
-        _cf_jwks_cache = keys
-        _cf_jwks_last_fetch = now
-    return _cf_jwks_cache
-
-
-def verify_cf_access_jwt(token: str, issuer: str, expected_aud: str) -> dict:
-    parts = token.split(".")
-    if len(parts) != 3:
-        raise ValueError("Invalid JWT structure")
-    header_b64, payload_b64, sig_b64 = parts
-    header = json.loads(_b64url_decode(header_b64))
-    if header.get("alg") != "RS256":
-        raise ValueError("Unsupported JWT algorithm")
-    kid = header.get("kid")
-    if not kid:
-        raise ValueError("Missing kid in JWT header")
-
-    keys = _fetch_cf_public_keys(issuer, force=False)
-    if kid not in keys:
-        keys = _fetch_cf_public_keys(issuer, force=True)
-    pub_key = keys.get(kid)
-    if not pub_key:
-        raise ValueError("Unknown Cloudflare signing key")
-
-    signing_input = f"{header_b64}.{payload_b64}".encode("ascii")
-    signature = _b64url_decode(sig_b64)
-    pub_key.verify(signature, signing_input, padding.PKCS1v15(), hashes.SHA256())
-
-    claims = json.loads(_b64url_decode(payload_b64))
-    now = time.time()
-    if claims.get("exp", 0) < (now - 60):
-        raise ValueError("Cloudflare Access token has expired")
-    if claims.get("nbf", 0) > (now + 60):
-        raise ValueError("Cloudflare Access token not yet valid")
-    if claims.get("iss", "").rstrip("/") != issuer.rstrip("/"):
-        raise ValueError("Invalid JWT issuer")
-
-    aud = claims.get("aud")
-    aud_list = [aud] if isinstance(aud, str) else (aud or [])
-    if expected_aud not in aud_list:
-        raise ValueError("Invalid JWT audience")
-
-    return claims

@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -12,14 +13,12 @@ from auth import (
     clear_failed_attempts,
     clear_session_cookie,
     create_session_token,
-    get_cf_access_config,
     get_client_ip,
     is_auth_configured,
     is_request_authenticated,
     record_failed_attempt,
     require_auth,
     set_session_cookie,
-    verify_cf_access_jwt,
     verify_master_password,
 )
 from StorePasswords import (
@@ -36,35 +35,15 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Password Manager API", version="1.0.0", lifespan=lifespan)
-
-
-@app.middleware("http")
-async def cloudflare_zero_trust_middleware(request: Request, call_next):
-    # Always allow internal container health probes (/api/health)
-    if request.url.path == "/api/health":
-        return await call_next(request)
-
-    issuer, expected_aud = get_cf_access_config()
-    if issuer and expected_aud:
-        cf_token = (
-            request.headers.get("cf-access-jwt-assertion")
-            or request.cookies.get("CF_Authorization")
-        )
-        if not cf_token:
-            return JSONResponse(
-                status_code=403,
-                content={"detail": "Cloudflare Zero Trust Access authentication required."},
-            )
-        try:
-            verify_cf_access_jwt(cf_token, issuer, expected_aud)
-        except Exception as exc:
-            return JSONResponse(
-                status_code=403,
-                content={"detail": f"Invalid Cloudflare Access token: {exc}"},
-            )
-
-    return await call_next(request)
+# Disable public /docs and /openapi.json so we can serve them behind require_auth
+app = FastAPI(
+    title="Password Manager API",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
 
 
 # Serve static UI from ./web
@@ -92,6 +71,16 @@ async def favicon() -> FileResponse:
 @app.get("/api/health")
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/openapi.json", include_in_schema=False, dependencies=[Depends(require_auth)])
+async def openapi_schema():
+    return app.openapi()
+
+
+@app.get("/docs", include_in_schema=False, dependencies=[Depends(require_auth)])
+async def swagger_docs():
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="Password Manager API · Docs")
 
 
 # ── Authentication Endpoints ────────────────────────────────────────────────
