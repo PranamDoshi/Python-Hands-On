@@ -44,12 +44,6 @@ if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
   usage; exit 0
 fi
 
-# Ensure Saved.pkl exists as a file so the bind mount maps correctly
-if [[ ! -f "Saved.pkl" ]]; then
-  echo "Saved.pkl not found. Creating an empty file for initial run..."
-  : > Saved.pkl
-fi
-
 CMD=$(compose_cmd)
 
 if [[ ${1:-} == "down" ]]; then

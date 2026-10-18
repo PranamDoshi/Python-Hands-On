@@ -1,3 +1,7 @@
-# Plaintext backups created by migrate_encrypt.py and temp files from atomic writes
+# Plaintext backups, local pickle files, and service account credentials
+Saved.pkl
 Saved.pkl.*
 *.tmp
+.env
+*service-account*.json
+

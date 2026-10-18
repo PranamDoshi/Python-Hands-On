@@ -8,9 +8,9 @@ services:
     container_name: password-manager
     ports:
       - "8000:8000"
-    # Bind mount the host Saved.pkl into the container at the path expected by the app (/app/Saved.pkl)
     volumes:
-      - ./Saved.pkl:/app/Saved.pkl
-      # Private key for decryption (read-only; never baked into the image)
+      # Private key & auth config (read-only; never baked into the image)
       - ${HOME}/.env:/root/.env:ro
+      - ${HOME}/.config/saving-passwords:/root/.config/saving-passwords:ro
     restart: unless-stopped
+

@@ -1,8 +1,13 @@
 // ──────────────────────────────────────────────────────────
-// API client (endpoints unchanged — encryption is handled server-side)
+// API client (encryption & Google Drive sync handled server-side)
 // ──────────────────────────────────────────────────────────
 async function request(url, options = {}, fallbackMsg = 'Request failed') {
-  const r = await fetch(url, options);
+  const r = await fetch(url, { credentials: 'same-origin', ...options });
+  if (r.status === 401 && !url.endsWith('/api/auth/login')) {
+    showUnlockModal();
+    const body = await r.json().catch(() => ({}));
+    throw new Error(typeof body.detail === 'string' ? body.detail : 'Vault is locked');
+  }
   if (!r.ok) {
     const body = await r.json().catch(() => ({}));
     throw new Error(typeof body.detail === 'string' ? body.detail : fallbackMsg);
@@ -16,7 +21,11 @@ const json = (method, body) => ({
 });
 
 const api = {
-  all: () => request('/api/passwords', {}, 'Failed to load entries'),
+  authStatus: () => request('/api/auth/status', {}, 'Failed to check auth status'),
+  login: (password) => request('/api/auth/login', json('POST', { password }), 'Invalid master password'),
+  logout: () => request('/api/auth/logout', { method: 'POST' }, 'Failed to lock vault'),
+  all: (refresh = false) =>
+    request(refresh ? '/api/passwords?refresh=true' : '/api/passwords', {}, 'Failed to load entries'),
   titles: () => request('/api/titles', {}, 'Failed to load entries'),
   get: (title) => request(`/api/password/${encodeURIComponent(title)}`, {}, 'Entry not found'),
   save: ({ title, password, email }) =>
@@ -166,16 +175,19 @@ function setView(view) {
 // ──────────────────────────────────────────────────────────
 // Sidebar list & strength tier filters
 // ──────────────────────────────────────────────────────────
-async function loadTitles() {
+async function loadTitles(refresh = false) {
   try {
-    const all = await api.all();
+    const all = await api.all(refresh);
     recordsCache = all && typeof all === 'object' ? all : {};
     titlesCache = Object.keys(recordsCache);
   } catch (e) {
+    if (document.body.classList.contains('vault-locked')) return;
     try {
       titlesCache = await api.titles();
     } catch (err) {
-      toast(err.message, 'error');
+      if (!document.body.classList.contains('vault-locked')) {
+        toast(err.message, 'error');
+      }
       titlesCache = [];
     }
   }
@@ -622,10 +634,102 @@ document.addEventListener('keydown', (e) => {
 $('#refreshBtn').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin');
-  await loadTitles();
+  await loadTitles(true);
   if (selectedTitle && titlesCache.includes(selectedTitle)) await openEntry(selectedTitle);
+  if (!document.body.classList.contains('vault-locked')) toast('Synced with Google Drive');
+});
+
+// ──────────────────────────────────────────────────────────
+// Unlock Vault & Session Lock
+// ──────────────────────────────────────────────────────────
+const unlockDialog = $('#unlockDialog');
+const unlockForm = $('#unlockForm');
+const unlockInput = $('#unlockInput');
+const unlockPwToggle = $('#unlockPwToggle');
+const unlockError = $('#unlockError');
+const unlockSubmitBtn = $('#unlockSubmitBtn');
+const lockBtn = $('#lockBtn');
+
+if (unlockDialog) {
+  unlockDialog.addEventListener('cancel', (e) => e.preventDefault());
+}
+
+function showUnlockModal(errorMessage = '') {
+  titlesCache = [];
+  recordsCache = {};
+  if (entryPassword) entryPassword.value = '';
+  setView('empty');
+  renderTierFilters();
+  renderTitles();
+  document.body.classList.add('vault-locked');
+  if (unlockError) {
+    unlockError.textContent = errorMessage;
+    unlockError.hidden = !errorMessage;
+  }
+  if (unlockDialog && !unlockDialog.open) {
+    unlockDialog.showModal();
+  }
+  setTimeout(() => unlockInput?.focus(), 30);
+}
+
+unlockPwToggle?.addEventListener('click', () => {
+  const show = unlockInput.type === 'password';
+  unlockInput.type = show ? 'text' : 'password';
+  setIcon(unlockPwToggle, show ? 'eye-off' : 'eye');
+});
+
+unlockForm?.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const pwd = unlockInput.value;
+  if (!pwd) return;
+  unlockSubmitBtn.disabled = true;
+  unlockError.hidden = true;
+  try {
+    await api.login(pwd);
+    unlockInput.value = '';
+    unlockInput.type = 'password';
+    setIcon(unlockPwToggle, 'eye');
+    unlockDialog.close();
+    document.body.classList.remove('vault-locked');
+    toast('Vault unlocked');
+    await loadTitles();
+  } catch (err) {
+    unlockError.textContent = err.message || 'Invalid master password';
+    unlockError.hidden = false;
+    unlockInput.select();
+  } finally {
+    unlockSubmitBtn.disabled = false;
+  }
+});
+
+lockBtn?.addEventListener('click', async () => {
+  try {
+    await api.logout();
+  } catch {
+    // Still lock UI locally
+  }
+  toast('Vault locked');
+  showUnlockModal();
 });
 
 // Init
-syncRange();
-loadTitles();
+async function init() {
+  syncRange();
+  try {
+    const status = await api.authStatus();
+    if (!status.authenticated) {
+      showUnlockModal(
+        status.auth_configured === false
+          ? 'Server SAVING_PASSWORDS_AUTH_PASSWORD is not configured.'
+          : ''
+      );
+      return;
+    }
+    await loadTitles();
+  } catch {
+    showUnlockModal();
+  }
+}
+
+init();
+

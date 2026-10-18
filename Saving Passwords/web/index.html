@@ -46,10 +46,13 @@
         <img src="/static/favicon.svg" alt="" class="brand-mark" />
         <div class="brand-text">
           <span class="brand-name">Vault</span>
-          <span class="brand-sub">Encrypted locally</span>
+          <span class="brand-sub">Cloud synced · Encrypted</span>
         </div>
-        <button id="refreshBtn" class="icon-btn" title="Reload entries" aria-label="Reload entries">
+        <button id="refreshBtn" class="icon-btn" title="Sync from Google Drive" aria-label="Sync from Google Drive">
           <svg class="ic"><use href="#i-refresh"/></svg>
+        </button>
+        <button id="lockBtn" class="icon-btn" title="Lock vault" aria-label="Lock vault">
+          <svg class="ic"><use href="#i-lock"/></svg>
         </button>
       </div>
 
@@ -242,6 +245,29 @@
       <div class="row end">
         <button class="btn ghost" value="cancel">Cancel</button>
         <button class="btn danger" value="ok">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Unlock Vault dialog -->
+  <dialog id="unlockDialog" class="dialog unlock-dialog">
+    <form id="unlockForm" class="dialog-body" autocomplete="off">
+      <div class="unlock-head">
+        <div class="empty-mark"><svg class="ic"><use href="#i-lock"/></svg></div>
+        <div>
+          <h3>Unlock Vault</h3>
+          <p class="muted">Enter your master password to decrypt and access entries.</p>
+        </div>
+      </div>
+      <div class="input-group">
+        <input id="unlockInput" class="mono" type="password" placeholder="Master password" required autocomplete="current-password" spellcheck="false" />
+        <button type="button" id="unlockPwToggle" class="icon-btn" aria-label="Show password"><svg class="ic"><use href="#i-eye"/></svg></button>
+      </div>
+      <p id="unlockError" class="hint error" hidden></p>
+      <div class="row end">
+        <button class="btn primary" type="submit" id="unlockSubmitBtn">
+          <svg class="ic"><use href="#i-lock"/></svg><span>Unlock</span>
+        </button>
       </div>
     </form>
   </dialog>

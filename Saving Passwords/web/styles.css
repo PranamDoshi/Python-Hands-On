@@ -459,6 +459,7 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 .hint:empty { display: none; }
 .hint.update { color: var(--amber); }
 .hint.new { color: var(--green); }
+.hint.error { color: var(--red); margin: 0; }
 
 /* ── Generator ──────────────────────────────────────────── */
 .gen { padding: 22px; display: flex; flex-direction: column; gap: 16px; }
@@ -509,6 +510,22 @@ input[type="range"]::-moz-range-thumb {
 .dialog-body h3 { font-size: 16px; }
 .dialog-body p { margin: -8px 0 0; font-size: 13px; overflow-wrap: anywhere; }
 .dialog-body .row { margin-top: 4px; }
+
+/* ── Unlock Vault Dialog & Lock State ───────────────────── */
+.vault-locked .app {
+  filter: blur(12px);
+  pointer-events: none;
+  user-select: none;
+}
+.unlock-head {
+  display: flex; align-items: center; gap: 14px;
+}
+.unlock-head .empty-mark {
+  margin: 0; width: 46px; height: 46px; border-radius: 13px; flex: none;
+}
+.unlock-head .empty-mark .ic { width: 20px; height: 20px; }
+.unlock-head p { margin: 2px 0 0; }
+.unlock-dialog::backdrop { background: rgba(5, 5, 8, .78); backdrop-filter: blur(8px); }
 
 /* ── Toasts ─────────────────────────────────────────────── */
 .toasts {
