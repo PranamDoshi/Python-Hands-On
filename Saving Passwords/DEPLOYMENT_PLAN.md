@@ -51,7 +51,7 @@ Before modifying any code on `main`, we tagged the local-only commit (`f791730`)
 
 ---
 
-## Phase 2: Step-by-Step Guide to Set Up Render.com (Free Tier — No Credit Card Required)
+## Phase 2: Step-by-Step Guide to Set Up Render.com (Done ✅)
 
 ### 2.1 Step 1: Create the Render Web Service & Connect GitHub
 1. Go to [https://dashboard.render.com/](https://dashboard.render.com/) and sign in with **GitHub** (no credit card is required for Free Web Services).
@@ -126,7 +126,7 @@ Because Render Free Tier does not provide built-in basic auth at the platform le
 
 ---
 
-## Phase 4: Implementation Checklist
+## Phase 4: Implementation Checklist (All Done ✅)
 
 - [x] **Step 0:** Create Git tag `v1.0-local` on `main` before cloud changes so the local-file version is preserved.
 - [x] **Step 1 (`gdrive_storage.py` & `pyproject.toml`):** Add Google Drive API support (`google-auth` + `requests`) to download and upload `Saved.pkl` bytes in-memory by `GDRIVE_FILE_ID`.
@@ -134,3 +134,4 @@ Because Render Free Tier does not provide built-in basic auth at the platform le
 - [x] **Step 3 (`auth.py` & `api.py`):** Implement mandatory `SAVING_PASSWORDS_AUTH_PASSWORD` verification, stateless HMAC session cookies, brute-force rate limiting, `/api/auth/{status,login,logout}`, and route protection across `/api/*` and `/docs`.
 - [x] **Step 4 (`web/index.html`, `web/app.js`, `web/styles.css`):** Add the Unlock Vault login dialog, `401` interceptor, and sidebar Lock button.
 - [x] **Step 5 (`Dockerfile` & `.gitignore`):** Update `Dockerfile` `CMD` to bind `${PORT:-8000}` with `--proxy-headers --forwarded-allow-ips='*'`, remove local `Saved.pkl` volume mounts/references, and verify Google Drive read/write with `GDRIVE_FILE_ID`.
+- [x] **Step 6:** Deployed to **Render.com** with Google Drive Service Account Secret File and environment variables.
